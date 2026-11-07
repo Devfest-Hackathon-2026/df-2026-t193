@@ -1,0 +1,22 @@
+{
+  "name": "tonari-navi",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @tonari/web",
+    "build": "npm run build -w @tonari/web",
+    "test": "vitest run",
+    "test:e2e": "npm run test:e2e -w @tonari/web",
+    "typecheck": "tsc -p packages/shared --noEmit && tsc -p apps/web --noEmit",
+    "format:check": "prettier --check \"apps/web/src/**/*.{ts,tsx}\" \"apps/web/e2e/*.{ts,tsx}\" \"packages/shared/src/*.ts\""
+  },
+  "devDependencies": {
+    "prettier": "3.6.2",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}
