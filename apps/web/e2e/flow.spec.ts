@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from './fake-speech';
+import type { Page } from '@playwright/test';
 import { resolve } from 'node:path';
 const primary = (page: Page) => page.locator('button.done');
 async function begin(page: Page) {

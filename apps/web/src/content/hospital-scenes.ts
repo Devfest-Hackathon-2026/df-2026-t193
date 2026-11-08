@@ -1,7 +1,7 @@
 import registered from '../../../../flows/hospital-recheck.json';
 import type { Flow } from '@tonari/shared';
 export const asset = (name: string) => `/assets/tonari/${name}.svg`;
-export const scenes: Record<string, { name: string; x?: number; y?: number; audio?: string }> = {
+export const scenes: Record<string, { name: string; x?: number; y?: number }> = {
   s1: { name: 'terminal', x: 286, y: 274 },
   s2: { name: 'terminal-choices' },
   's3-internal': { name: 'terminal-internal', x: 106.5, y: 161 },

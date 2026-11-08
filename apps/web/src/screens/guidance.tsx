@@ -2,10 +2,12 @@ import { ja } from '../copy/ja';
 import { Header, Heading, Word, Primary, Help, Voice, Sheet, Icon } from '../components/ui';
 import { KioskScene, SceneDetail } from '../components/KioskScene';
 import type { AppState, Action } from '../state/machine';
-import { scenes } from '../content/hospital-scenes';
 import { currentStep } from '../state/machine';
 import type { Dispatch } from 'react';
 import { useGuidanceAudio } from '../hooks/useGuidanceAudio';
+import { guidanceSpeech } from '../content/speech';
+import { voiceFile } from '../content/voice';
+import { primeGuidanceAudio } from '../audio/unlock';
 export function GuidanceScreen({
   state,
   demo,
@@ -20,20 +22,19 @@ export function GuidanceScreen({
   const visual = state.flow!.steps[id];
   const isChoice = step.type === 'choice',
     isEnd = step.type === 'end';
-  const text =
-    step.type === 'guide'
-      ? step.instruction.join('。')
-      : step.type === 'choice'
-        ? `${step.question.join('')}。${step.options.map((o) => o.label).join('、')}`
-        : step.type === 'stop'
-          ? ja.safeCopy
-          : '';
-  const audio = useGuidanceAudio(`${state.revision}:${state.overlay}`, text, scenes[state.stepId!]?.audio);
+  const text = guidanceSpeech(step, { first: state.previousStep === null });
+  const audio = useGuidanceAudio(
+    `${state.revision}:${state.overlay}`,
+    text,
+    voiceFile(state.flow!, text),
+    true,
+  );
   const open = (overlay: AppState['overlay']) => {
     audio.stop();
     dispatch({ type: 'OPEN', overlay });
   };
   const press = () => {
+    primeGuidanceAudio();
     audio.stop();
     dispatch({ type: isChoice ? 'CONFIRM' : 'PRESS', revision: state.revision });
   };

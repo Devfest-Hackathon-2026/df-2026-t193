@@ -107,7 +107,7 @@ npm run dev
 | HTTPS 환경 iPhone/Android 촬영·음성·화면읽기 | 프론트+검증 담당 | 기종/OS/browser/URL별 기록 |
 | 호스팅 배포 및 공개 URL 확인 | 공동 | 별도 배포/검증 기록. 이 PR 자체는 배포가 아님 |
 
-음원 연결점은 `apps/web/src/content/hospital-scenes.ts`의 optional `audio`다. 현재 파일 URL은 비어 있고, 재생 버튼은 기기 내 일본어 음성이 있으면 사용한다. 파일 재생기는 구현·테스트했으나 최종 음원과 자동 음성 안내는 남아 있다. 마이크/Live WebSocket/조작음 자동 진행은 이번 범위 밖이다.
+음원은 `apps/web/src/content/voice-manifest.json`이 문장→파일을 매핑한다. `npm run voice:generate`(gcloud 로그인, Text-to-Speech API 필요)로 `flows/`와 `copy/ja.ts`의 문장을 Chirp 3 HD MP3로 다시 만든다. 파일이 없거나 실패하면 기기 내 일본어 음성으로 대체한다. 마이크/Live WebSocket/조작음 자동 진행은 이번 범위 밖이다.
 
 ## 5. 코드를 볼 순서와 확인 명령
 

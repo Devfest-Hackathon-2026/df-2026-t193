@@ -21,7 +21,7 @@ npm run test:e2e
 
 E2E はインストール済みの Google Chrome を使用し、5180 ポートでテスト用サーバーを起動します。カメラ映像・API 応答・音声再生オブジェクトはテスト用です。実機検証の代わりではありません。
 
-案内音声は現状、端末内の日本語音声が使えるときに再生ボタンで利用できます。最終音声ファイルの準備・検収、実 API 接続、iPhone/Android 実機確認は残っています。
+案内音声は各手順に入ると自動で再生します（Google Cloud Text-to-Speech で事前生成した音声。文言を変えたら `npm run voice:generate` で作り直します）。実 API 接続、iPhone/Android 実機確認は残っています。
 
 - [バックエンド接続・API 契約・残作業](docs/backend-handoff.md)
 - [仕様・計画・作業一覧](specs/001-frontend-foundation/spec.md)

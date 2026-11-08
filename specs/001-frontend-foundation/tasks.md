@@ -18,7 +18,7 @@ T001 → T002 → T003 → T004 → T005 → T006/T007 → T008 → T009 → T01
 
 - [x] **T005 [US2,US3,US5] 실제 촬영과 자원 정리** — `hooks/useCamera.ts`, 훅 테스트, `screens/entry.tsx`, `App.tsx`, `e2e/camera.spec.ts`. 실제 프리뷰·JPEG·촬영 준비·취소·권한 오류·hidden·늦은 stream 획득 처리. **FR-005,006,008,012,013**: fake device/denied/no device/no response/cancel/hidden에서 기대 track 종료, 중복 업로드 없음, 이미지 방향·크기 검증. 실기 촬영은 T012에서 별도 기록.
 
-- [ ] **T006 [US1,US5] 안내 음성** — `hooks/useGuidanceAudio.ts`, 테스트, `content/hospital-scenes.ts`, `screens/guidance.tsx`, `copy/ja.ts`. 재생/중지/재시도·auto-play 거절·음원 누락·다음 단계/백그라운드 중지. **FR-010,011**: 오디오 중복 없음, 실패 시 터치 진행, 안전 단계 통과 신호와 분리. 최종 음원 미준비면 테스트 음원 결과와 구분.
+- [x] **T006 [US1,US5] 안내 음성** — `hooks/useGuidanceAudio.ts`, 테스트, `content/hospital-scenes.ts`, `screens/guidance.tsx`, `copy/ja.ts`. 재생/중지/재시도·auto-play 거절·음원 누락·다음 단계/백그라운드 중지. **FR-010,011**: 오디오 중복 없음, 실패 시 터치 진행, 안전 단계 통과 신호와 분리. 최종 음원 미준비면 테스트 음원 결과와 구분.
 
 - [x] **T007 [US1,US7] 모의 병원 접수기** — `mock/HospitalKiosk.tsx`, `App.tsx`, `e2e/kiosk.spec.ts`, 등록 장면 manifest. 실제 버튼으로만 단계 이동하고 모의 표시는 유지. 번호 입력 없이 가상 입력 완료 제공. **FR-002,015**: 3개 진료과, 안전 입력 단계, 확정, 초기화가 동작하고 폰 주 버튼이 기기를 자동 조작하지 않음. 장면/버튼 위치 대조.
 
@@ -63,7 +63,7 @@ T001 → T002 → T003 → T004 → T005 → T006/T007 → T008 → T009 → T01
 
 ## 구현 후 남은 항목 (2026-11-08)
 
-- T006: 재생기와 파일 재생 오류 테스트는 완료. 최종 일본어 음원·검수·자동 안내 연결은 미완료. 기기 내 일본어 음성이 있으면 수동 재생 가능.
+- T006: 자동 음성 안내와 Cloud TTS 음원 연결 완료(2026-11-08). 실폰 청취·VoiceOver 겹침 확인은 T012로 남김.
 - T011: HTTP 클라이언트/대역 계약 테스트 완료, 실제 백엔드 미연결.
 - T012: 브라우저 합성 카메라·오디오 검사와 시각 검증 완료. 실제 iPhone/Android·VoiceOver/TalkBack·소리 확인은 NOT_RUN.
 - T001~T010의 완료된 로컬 검증은 frontend-status의 시간·대상·소스 hash를 참조. 과거 문서 검토 결과는 최초 스펙 단계 기록이다.

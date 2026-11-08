@@ -1,0 +1,21 @@
+{
+  "flow_id": "hospital-recheck",
+  "version": "1",
+  "voice": "ja-JP-Chirp3-HD-Kore",
+  "speaking_rate": 0.9,
+  "items": {
+    "右下の、緑の『受付』を押してください。受付を始めるボタンです。": "/assets/tonari/voice/hospital-recheck-v1/s1.mp3",
+    "右下の、緑の『受付』を押してください。受付を始めるボタンです。押したら、この画面の「押しました」を押してください。": "/assets/tonari/voice/hospital-recheck-v1/s1-first.mp3",
+    "どの科を受診しますか。内科、外科、整形外科から選んでください。": "/assets/tonari/voice/hospital-recheck-v1/s2.mp3",
+    "左上の、青の『内科』を押してください。お伝えいただいた診療科です。": "/assets/tonari/voice/hospital-recheck-v1/s3-internal.mp3",
+    "左上の、青の『内科』を押してください。お伝えいただいた診療科です。押したら、この画面の「押しました」を押してください。": "/assets/tonari/voice/hospital-recheck-v1/s3-internal-first.mp3",
+    "上の真ん中の、青の『外科』を押してください。お伝えいただいた診療科です。": "/assets/tonari/voice/hospital-recheck-v1/s3-surgery.mp3",
+    "上の真ん中の、青の『外科』を押してください。お伝えいただいた診療科です。押したら、この画面の「押しました」を押してください。": "/assets/tonari/voice/hospital-recheck-v1/s3-surgery-first.mp3",
+    "右上の、青の『整形外科』を押してください。お伝えいただいた診療科です。": "/assets/tonari/voice/hospital-recheck-v1/s3-orthopedics.mp3",
+    "右上の、青の『整形外科』を押してください。お伝えいただいた診療科です。押したら、この画面の「押しました」を押してください。": "/assets/tonari/voice/hospital-recheck-v1/s3-orthopedics-first.mp3",
+    "ここからは、ご自分で入力してください。番号や個人情報は声に出さず、受付機に入力してください。": "/assets/tonari/voice/hospital-recheck-v1/s4.mp3",
+    "右下の、緑の『確定』を押してください。入力した内容で受付を終えるボタンです。": "/assets/tonari/voice/hospital-recheck-v1/s5.mp3",
+    "右下の、緑の『確定』を押してください。入力した内容で受付を終えるボタンです。押したら、この画面の「押しました」を押してください。": "/assets/tonari/voice/hospital-recheck-v1/s5-first.mp3",
+    "案内はここまでです。おつかれさまでした。": "/assets/tonari/voice/hospital-recheck-v1/s6.mp3"
+  }
+}

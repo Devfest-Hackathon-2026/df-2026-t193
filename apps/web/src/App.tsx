@@ -10,6 +10,7 @@ import { createHttpGateway } from './api/http';
 import { GatewayError } from './api/gateway';
 import { assertSupportedScenes } from './content/hospital-scenes';
 import { HospitalKiosk } from './mock/HospitalKiosk';
+import { primeGuidanceAudio } from './audio/unlock';
 const gateway = createHttpGateway(import.meta.env.VITE_API_BASE_URL ?? '');
 export function App() {
   return location.pathname === '/mock/hospital' ? <HospitalKiosk /> : <GuideApp />;
@@ -113,7 +114,10 @@ function GuideApp() {
       {state.screen === 'start' && (
         <StartScreen
           demo={demo}
-          onStart={() => dispatch({ type: 'START' })}
+          onStart={() => {
+            primeGuidanceAudio();
+            dispatch({ type: 'START' });
+          }}
           onHelp={() => dispatch({ type: 'OPEN', overlay: 'howto' })}
         />
       )}

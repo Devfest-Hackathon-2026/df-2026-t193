@@ -18,6 +18,11 @@ export const ja = {
   voiceStop: '読み上げを止める',
   optionsVoice: '選択肢を聞く',
   voiceUnavailable: '音声を再生できませんでした。画面の案内で進めます。',
+  speech: {
+    pressHint: '押したら、この画面の「押しました」を押してください。',
+    choose: (labels: string) => `${labels}から選んでください。`,
+    done: '案内はここまでです。おつかれさまでした。',
+  },
   help: '困ったとき',
   helpTitle: 'どうしましたか？',
   wrong: '違う画面が出ています',

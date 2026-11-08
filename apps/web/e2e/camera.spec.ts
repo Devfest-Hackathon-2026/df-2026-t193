@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from './fake-speech';
+import type { Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 const sample = JSON.parse(
   readFileSync(new URL('../../../flows/hospital-recheck.json', import.meta.url), 'utf8'),

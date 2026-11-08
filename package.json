@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:e2e": "npm run test:e2e -w @tonari/web",
     "typecheck": "tsc -p packages/shared --noEmit && tsc -p apps/web --noEmit",
-    "format:check": "prettier --check \"apps/web/src/**/*.{ts,tsx}\" \"apps/web/e2e/*.{ts,tsx}\" \"packages/shared/src/*.ts\""
+    "format:check": "prettier --check \"apps/web/src/**/*.{ts,tsx}\" \"apps/web/e2e/*.{ts,tsx}\" \"packages/shared/src/*.ts\"",
+    "voice:generate": "vite-node apps/web/scripts/generate-voice.ts --"
   },
   "devDependencies": {
     "prettier": "3.6.2",

@@ -3,7 +3,7 @@
 현재 상세 상태는 `frontend-status.md`, 구현 항목은 `../specs/001-frontend-foundation/tasks.md`가 기준이다.
 
 1. 서버 담당자와 session/identify/flow/version/error 계약 합의 후 실제 서버 연결.
-2. 단계별 일본어 안내 음원 생성·검수·허용 자산 URL 등록. 현재 기기 내 음성 재생 대체와 파일 재생기만 구현됨.
+2. 안내 음원은 Cloud TTS로 생성·연결됨(`npm run voice:generate`). 문구를 바꾸면 다시 생성한다. 실폰 청취 확인은 남음.
 3. HTTPS 환경에서 실제 iPhone Safari/Android Chrome의 후면 카메라·거부 복구·소리·앱 전환·화면읽기 확인.
 4. 모의 접수기를 태블릿에 띄우고 폰으로 찍는 실제 동선 검증. AI 식별 정확도는 별도 평가.
 5. 허용된 호스팅에 배포하고 실제 URL 경로를 확인. 아직 push/배포 없음.

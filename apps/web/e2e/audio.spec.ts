@@ -1,5 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
-async function setup(page: Page, fail = false) {
+import { fakeSpeech, spoken, type SpeechMode } from './fake-speech';
+async function setup(page: Page, fail = false, speech: SpeechMode = 'none') {
+  await fakeSpeech(page, speech);
   await page.addInitScript(
     ({ fail }) => {
       const w = window as unknown as { players: { paused: boolean; src: string }[] };
@@ -69,6 +71,15 @@ test('audio resource error releases player', async ({ page }) => {
   expect(
     await page.evaluate(() => (window as unknown as { players: { src: string }[] }).players[0]!.src),
   ).toBe('');
+});
+test('missing file falls back to the on-device Japanese voice', async ({ page }) => {
+  await setup(page, false, 'ok');
+  await page.locator('#play-test').click();
+  await page.evaluate(() =>
+    (window as unknown as { players: { onerror: () => void }[] }).players[0]!.onerror(),
+  );
+  await expect.poll(() => spoken(page)).toEqual(['テスト']);
+  await expect(page.locator('#audio-state')).toHaveText('playing');
 });
 test('audio stops on background', async ({ page }) => {
   await setup(page);

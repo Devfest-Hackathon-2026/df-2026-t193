@@ -3,6 +3,7 @@ import { ja } from '../copy/ja';
 import { Header, Heading, Word, Primary, Help } from '../components/ui';
 import { KioskScene } from '../components/KioskScene';
 import { useCamera } from '../hooks/useCamera';
+import { primeGuidanceAudio } from '../audio/unlock';
 import type { AppState } from '../state/machine';
 export function StartScreen({
   demo,
@@ -66,6 +67,7 @@ export function CaptureScreen({
           ? 'terminal-done'
           : 'terminal-neutral';
   async function take() {
+    primeGuidanceAudio();
     if (demo) {
       onPhoto(null, screen);
       return;
