@@ -17,5 +17,19 @@
     "右下の、緑の『確定』を押してください。入力した内容で受付を終えるボタンです。": "/assets/tonari/voice/hospital-recheck-v1/s5.mp3",
     "右下の、緑の『確定』を押してください。入力した内容で受付を終えるボタンです。押したら、この画面の「押しました」を押してください。": "/assets/tonari/voice/hospital-recheck-v1/s5-first.mp3",
     "案内はここまでです。おつかれさまでした。": "/assets/tonari/voice/hospital-recheck-v1/s6.mp3"
+  },
+  "common": {
+    "受付機の画面全体が枠に入ったら、「撮る」を押してください。": "/assets/tonari/voice/common/capture.mp3",
+    "見本の画面で進みます。「撮る」を押してください。": "/assets/tonari/voice/common/demo-capture.mp3",
+    "操作が分かりません。手伝っていただけますか。": "/assets/tonari/voice/common/staff.mp3",
+    "画面を確認できませんでした。もう一度撮ってください。": "/assets/tonari/voice/common/error-unknown.mp3",
+    "通信できません。接続を確認して、もう一度撮ってください。": "/assets/tonari/voice/common/error-offline.mp3",
+    "確認に時間がかかっています。もう一度撮るか、スタッフにご相談ください。": "/assets/tonari/voice/common/error-timeout.mp3",
+    "接続の有効時間が過ぎました。もう一度撮ってください。": "/assets/tonari/voice/common/error-expired.mp3",
+    "画像を送れませんでした。もう一度撮ってください。": "/assets/tonari/voice/common/error-tooLarge.mp3",
+    "しばらく待ってから、もう一度お試しください。": "/assets/tonari/voice/common/error-limited.mp3",
+    "ただいま接続できません。もう一度撮るか、スタッフにご相談ください。": "/assets/tonari/voice/common/error-server.mp3",
+    "この画面の案内を確認できません。スタッフにご相談ください。": "/assets/tonari/voice/common/error-protocol.mp3",
+    "接続の準備中です。見本で使い方を確認できます。": "/assets/tonari/voice/common/error-unconfigured.mp3"
   }
 }

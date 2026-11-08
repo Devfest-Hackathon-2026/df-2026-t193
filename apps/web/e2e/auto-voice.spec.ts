@@ -101,3 +101,56 @@ test('prerecorded voice file plays when generated, without device speech', async
   await voice(page).click();
   await expect(voice(page)).toHaveAttribute('aria-pressed', 'false');
 });
+test('capture screen speaks how to shoot, and errors are spoken on return', async ({ page }) => {
+  await fakeSpeech(page, 'ok', 100);
+  await page.goto('/demo');
+  await primary(page).click();
+  await expect
+    .poll(async () => (await spoken(page)).at(-1))
+    .toBe('見本の画面で進みます。「撮る」を押してください。');
+  await primary(page).click();
+  await expect(page.locator('h1')).toHaveText('受付を押してください');
+  await page.getByRole('button', { name: '困ったとき' }).click();
+  await page.getByRole('button', { name: '違う画面が出ています' }).click();
+  await page.locator('select').selectOption('unknown');
+  await primary(page).click();
+  await expect(page.getByRole('alert')).toContainText('確認できません');
+  await expect
+    .poll(async () => (await spoken(page)).at(-1))
+    .toBe('画面を確認できませんでした。もう一度撮ってください。');
+});
+test('auto voice can be turned off from help and stays off after reload', async ({ page }) => {
+  await fakeSpeech(page, 'ok', 100);
+  await begin(page);
+  await expect.poll(() => spoken(page)).toHaveLength(1);
+  await page.getByRole('button', { name: '困ったとき' }).click();
+  await page.getByRole('button', { name: '自動の読み上げを止める' }).click();
+  await expect(page.getByRole('button', { name: '自動の読み上げを始める' })).toBeVisible();
+  await page.getByRole('button', { name: '案内に戻る', exact: true }).click();
+  await primary(page).click();
+  await expect(page.locator('h1')).toHaveText('どの科ですか？');
+  await page.waitForTimeout(500);
+  expect(await spoken(page)).toHaveLength(1);
+  // Manual play still works.
+  await voice(page).click();
+  await expect.poll(() => spoken(page)).toHaveLength(2);
+  await page.reload();
+  await page.getByRole('button', { name: '使い方を見る' }).click();
+  await expect(page.getByRole('button', { name: '自動の読み上げを始める' })).toBeVisible();
+  await page.getByRole('button', { name: '自動の読み上げを始める' }).click();
+  await expect(page.getByRole('button', { name: '自動の読み上げを止める' })).toBeVisible();
+});
+test('staff screen speaks the request only when tapped', async ({ page }) => {
+  await fakeSpeech(page, 'ok', 100);
+  await begin(page);
+  await expect.poll(() => spoken(page)).toHaveLength(1);
+  await page.getByRole('button', { name: '困ったとき' }).click();
+  await page.getByRole('button', { name: 'スタッフに聞きたい' }).click();
+  await expect(page.locator('h1')).toHaveText('スタッフに見せてください');
+  await page.waitForTimeout(500);
+  expect(await spoken(page)).toHaveLength(1);
+  await page.getByRole('button', { name: '読み上げる' }).click();
+  await expect
+    .poll(async () => (await spoken(page)).at(-1))
+    .toBe('操作が分かりません。手伝っていただけますか。');
+});

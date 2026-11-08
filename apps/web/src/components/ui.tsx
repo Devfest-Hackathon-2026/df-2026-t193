@@ -174,17 +174,19 @@ export function Voice({
   failed,
   onClick,
   choice = false,
+  label,
 }: {
   playing: boolean;
   failed: boolean;
   onClick: () => void;
   choice?: boolean;
+  label?: string;
 }) {
   return (
     <>
       <button className="voice" aria-pressed={playing} onClick={onClick}>
         <Icon name="sound" />
-        <span>{playing ? ja.voiceStop : choice ? ja.optionsVoice : ja.again}</span>
+        <span>{playing ? ja.voiceStop : (label ?? (choice ? ja.optionsVoice : ja.again))}</span>
       </button>
       {failed && (
         <p className="feedback" role="status">

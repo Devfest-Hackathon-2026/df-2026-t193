@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import { ja } from '../copy/ja';
-import { Header, Heading, Word, Primary, Help } from '../components/ui';
+import { Header, Heading, Word, Primary, Help, Voice } from '../components/ui';
 import { KioskScene } from '../components/KioskScene';
 import { useCamera } from '../hooks/useCamera';
 import { primeGuidanceAudio } from '../audio/unlock';
+import { useAutoVoice } from '../audio/preference';
+import { useGuidanceAudio } from '../hooks/useGuidanceAudio';
+import { voiceFile } from '../content/voice';
 import type { AppState } from '../state/machine';
 export function StartScreen({
   demo,
@@ -51,6 +54,9 @@ export function CaptureScreen({
       state.stepId === 's5' ? 'confirmation' : state.stepId && state.stepId !== 's1' ? 'department' : 'start',
     );
   const [wait, setWait] = useState(Date.now() < state.retryAt);
+  const autoVoice = useAutoVoice();
+  const spoken = state.error ? ja.errors[state.error] : demo ? ja.speech.demoCapture : ja.speech.capture;
+  const audio = useGuidanceAudio(`capture:${state.revision}`, spoken, voiceFile(null, spoken), autoVoice);
   useEffect(() => {
     const timer = setTimeout(
       () => setWait(false),
@@ -68,6 +74,7 @@ export function CaptureScreen({
           : 'terminal-neutral';
   async function take() {
     primeGuidanceAudio();
+    audio.stop();
     if (demo) {
       onPhoto(null, screen);
       return;
@@ -183,13 +190,25 @@ export function StaffScreen({
   onBack: () => void;
   onRestart: () => void;
 }) {
+  // Not automatic: the user decides when the phone speaks to staff.
+  const audio = useGuidanceAudio('staff', ja.staffMessage, voiceFile(null, ja.staffMessage));
   return (
     <main className="app view-start">
       <Header demo={demo} />
       <KioskScene name="terminal-neutral" />
       <section className="guide-panel">
-        <Heading>{ja.staffTitle}</Heading>
+        <Heading>
+          {ja.staffTitleWords.map((w) => (
+            <Word key={w}>{w}</Word>
+          ))}
+        </Heading>
         <p className="subcopy">{ja.staffMessage}</p>
+        <Voice
+          playing={audio.playing}
+          failed={audio.failed}
+          onClick={() => void audio.play()}
+          label={ja.staffVoice}
+        />
         <Primary onClick={onRestart}>{ja.restart}</Primary>
         {canReturn && <Help onClick={onBack} label={ja.return} />}
       </section>

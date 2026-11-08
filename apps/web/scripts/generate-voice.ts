@@ -14,7 +14,7 @@ import { mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { demoFlow as flow } from '../src/api/demo';
-import { speechVariants } from '../src/content/speech';
+import { fixedSpeech, speechVariants } from '../src/content/speech';
 import type { VoiceManifest } from '../src/content/voice';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -67,28 +67,36 @@ if (samples !== null) {
     console.log(file);
   }
 } else {
-  const folder = `${flow.flow_id}-v${flow.version}`;
-  const dir = resolve(here, '../public/assets/tonari/voice', folder);
-  mkdirSync(dir, { recursive: true });
-  for (const file of readdirSync(dir)) if (file.endsWith('.mp3')) rmSync(join(dir, file));
-  const items: Record<string, string> = {};
+  const root = resolve(here, '../public/assets/tonari/voice');
   let chars = 0;
-  for (const { file, text } of variants) {
-    writeFileSync(join(dir, `${file}.mp3`), await synthesize(text, voice));
-    items[text] = `/assets/tonari/voice/${folder}/${file}.mp3`;
-    chars += text.length;
-    console.log(`${file}.mp3`);
-  }
+  const render = async (folder: string, list: { file: string; text: string }[]) => {
+    const dir = join(root, folder);
+    mkdirSync(dir, { recursive: true });
+    for (const file of readdirSync(dir)) if (file.endsWith('.mp3')) rmSync(join(dir, file));
+    const items: Record<string, string> = {};
+    for (const { file, text } of list) {
+      writeFileSync(join(dir, `${file}.mp3`), await synthesize(text, voice));
+      items[text] = `/assets/tonari/voice/${folder}/${file}.mp3`;
+      chars += text.length;
+      console.log(`${folder}/${file}.mp3`);
+    }
+    return items;
+  };
+  const items = await render(`${flow.flow_id}-v${flow.version}`, variants);
+  const common = await render('common', fixedSpeech());
   const manifest: VoiceManifest = {
     flow_id: flow.flow_id,
     version: flow.version,
     voice,
     speaking_rate: rate,
     items,
+    common,
   };
   writeFileSync(
     resolve(here, '../src/content/voice-manifest.json'),
     `${JSON.stringify(manifest, null, 2)}\n`,
   );
-  console.log(`${variants.length} files, ${chars} characters, voice ${voice}, rate ${rate}`);
+  console.log(
+    `${Object.keys(items).length + Object.keys(common).length} files, ${chars} characters, voice ${voice}, rate ${rate}`,
+  );
 }
