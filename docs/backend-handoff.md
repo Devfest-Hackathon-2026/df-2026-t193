@@ -1,17 +1,18 @@
 # 백엔드 연결 시작 안내
 
-이 브랜치는 승인된 となりナビ 프론트엔드 구현이다. 견본 경로는 동작하지만 실제 AI/백엔드 연결은 아직 검증하지 않았다. **아래 규격은 현재 프론트가 실제로 보내고 받는 형태이며, 서버와 합의된 최종 규격은 아니다.**
+서버(`apps/api`)와 웹(`apps/web`)은 main에 있고, 배포된 웹이 Cloud Run API를 호출한다. 이 문서는 현재 쓰는 연결 규격과 운영 방법을 정리한다. 실제 폰으로 찍은 사진의 식별 정확도는 아직 측정하지 않았다.
 
 ## 1. 먼저 실행
 
 ```sh
-git fetch origin
-git switch --track origin/feat/frontend-foundation
+git switch main
+git pull
 npm ci
-npm run dev
+npm run dev      # 웹
+npm run dev:api  # API. apps/api/.env.example 참고. 기본은 Gemini를 쓰지 않는 fake 식별
 ```
 
-이미 이 브랜치를 가지고 있다면 `git switch feat/frontend-foundation`만 한다. 로컬 웹 주소는 기본 `http://127.0.0.1:5173`이다.
+로컬 웹 주소는 기본 `http://127.0.0.1:5173`이다.
 
 | 경로 | 용도 |
 |---|---|
@@ -19,7 +20,7 @@ npm run dev
 | `/mock/hospital` | 독립적으로 눌러 진행하는 모의 병원 접수기. 개인정보 입력 없음 |
 | `/` | 실제 카메라와 HTTP adapter를 사용하는 연결 경로 |
 
-서버가 준비되면 `apps/web/.env.example`을 `apps/web/.env.local`로 복사하고 `VITE_API_BASE_URL`에 **API의 origin 또는 경로 prefix**를 지정한 뒤 Vite를 재시작한다. 예를 들어 API가 `http://127.0.0.1:8080/session`이면 base는 `http://127.0.0.1:8080`이다. 키·토큰을 이 변수에 넣지 않는다. HTTPS 프론트에서는 HTTPS API가 필요하다.
+로컬 웹을 API에 붙이려면 `apps/web/.env.example`을 `apps/web/.env.local`로 복사하고 `VITE_API_BASE_URL`에 **API의 origin 또는 경로 prefix**를 지정한 뒤 Vite를 재시작한다. 예를 들어 API가 `http://127.0.0.1:8080/session`이면 base는 `http://127.0.0.1:8080`이다. 키·토큰을 이 변수에 넣지 않는다. HTTPS 프론트에서는 HTTPS API가 필요하다.
 
 현재 Vite에는 API proxy 설정이 없다. `/api` 같은 상대 prefix를 쓰려면 호스팅 또는 개발 proxy가 실제로 그 경로를 서버에 전달해야 한다. E2E의 `/api`는 Playwright가 가로채는 테스트 경로다.
 
@@ -95,14 +96,14 @@ npm run dev
 
 자세한 계약: [contracts.md](../specs/001-frontend-foundation/contracts.md).
 
-## 4. 서버가 생기면 바로 할 확인
+## 4. 서버 검사와 배포
 
 ### 계약 검사기
 
 프론트가 실제로 쓰는 HTTP adapter와 검증 코드를 그대로 써서 서버를 검사한다. 토큰은 출력하지 않는다.
 
 ```sh
-npm run api:check -- https://<API base> --origin https://axial-sunup-488315-k1.web.app
+npm run api:check -- https://tonari-api-791151105038.asia-northeast1.run.app
 ```
 
 | 검사 | 기대 |
@@ -116,31 +117,59 @@ npm run api:check -- https://<API base> --origin https://axial-sunup-488315-k1.w
 
 입력 사진은 `apps/web/e2e/fixtures/kiosk/*.jpg`다. 우리 모의 접수기(`/mock/hospital`)를 태블릿 세로 크기로 찍은 합성 화면이며 실제 기기·사람 사진이 아니다. 모의 접수기를 바꾸면 dev 서버를 켠 뒤 `npm run fixtures:kiosk -- http://127.0.0.1:5173`로 다시 만든다. 실제 폰 카메라 사진은 각도·반사가 있으므로 이 검사 통과가 실촬영 식별 성능을 뜻하지 않는다.
 
-### 권장 배포 연결: Firebase Hosting → Cloud Run (같은 origin)
+### 현재 배포 구성
 
-웹은 이미 Firebase Hosting(`axial-sunup-488315-k1`)에 있다. API를 같은 프로젝트의 Cloud Run에 올리면 Hosting rewrite로 `/api/**`를 서비스에 넘길 수 있다. 같은 origin이라 CORS가 필요 없다.
+프로젝트 `axial-sunup-488315-k1`. 웹은 Cloud Run 주소를 직접 호출하고(cross-origin), 서버의 CORS 허용 목록으로 제한한다. 서버 경로에 `/api` prefix가 없으므로 Firebase Hosting rewrite는 쓰지 않는다.
 
-```json
-{ "source": "/api/**", "run": { "serviceId": "<service>", "region": "asia-northeast1" } }
+| 항목 | 값 |
+|---|---|
+| 웹 | Firebase Hosting, https://axial-sunup-488315-k1.web.app |
+| API | Cloud Run `tonari-api`, `asia-northeast1`, https://tonari-api-791151105038.asia-northeast1.run.app |
+| 인스턴스 | 최소 0, 최대 2, 동시 요청 20, 요청 제한 30초, 메모리 512Mi |
+| 실행 계정 | `tonari-api@axial-sunup-488315-k1.iam.gserviceaccount.com` (`roles/aiplatform.user`) |
+| 공개 범위 | `allUsers`에 `roles/run.invoker`. 브라우저에서 직접 호출하기 위해 필요 |
+| 비밀값 | Secret Manager `tonari-jwt-secret` → `JWT_SECRET` |
+| 환경 변수 | `NODE_ENV=production`, `IDENTIFIER=gemini`, `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION=global`, `MODEL_FLASH=gemini-3.5-flash`, `ALLOWED_ORIGINS` |
+
+`MODEL_FLASH`는 꼭 지정한다. 코드의 기본값 `gemini-3.8-flash`는 이 프로젝트에서 쓸 수 없다. `ALLOWED_ORIGINS`에는 web.app, firebaseapp.com, 로컬 개발 주소가 들어 있다.
+
+API 다시 배포 (저장소 맨 위에서 실행. 위 설정은 서비스에 남아 있어 유지된다):
+
+```sh
+gcloud run deploy tonari-api --source . --region asia-northeast1 --project axial-sunup-488315-k1 \
+  --set-build-env-vars "GOOGLE_ENTRYPOINT=npm run start -w @tonari/api,GOOGLE_NODE_RUN_SCRIPTS="
 ```
 
-- `firebase.json`의 `rewrites`에서 `**` 규칙 **앞에** 넣는다. 서비스가 실제로 있어야 배포가 통과한다.
-- Cloud Run은 경로를 그대로 받으므로 서버가 `/api/session`, `/api/identify`, `/api/flows/:id`를 처리하거나 prefix를 제거해야 한다.
-- 웹 빌드는 `VITE_API_BASE_URL=/api npm run build` 후 `npx firebase-tools deploy --only hosting`.
-- Hosting 경유 요청의 제한 시간은 60초다. 프론트 identify 제한 시간 20초보다 길다.
-- 다른 origin(Cloud Run URL 직접)으로 연결하면 위 CORS 항목을 서버가 처리해야 한다.
+웹 다시 배포. predeploy가 `npm run build:prod`로 API 주소를 넣어 빌드한다. 이 CLI는 predeploy 명령에 `=`가 있으면 실행하지 않으므로 환경 변수는 npm 스크립트에 둔다.
 
-## 5. 담당별 남은 작업
+```sh
+npx firebase-tools deploy --only hosting
+```
 
-| 작업 | 담당 영역 | 완료 증거 |
+### 운영
+
+- **긴급 정지:** 모든 요청을 503으로 거절한다. 되돌릴 때는 `EMERGENCY_STOP=false`로 다시 실행한다.
+
+  ```sh
+  gcloud run services update tonari-api --region asia-northeast1 --project axial-sunup-488315-k1 --update-env-vars EMERGENCY_STOP=true
+  ```
+
+- **비용 제한:** 식별은 분당 30건, 인스턴스당 총 2000건이다. 카운터는 인스턴스 메모리에 있어 다시 켜지면 초기화된다.
+- **예산 알림:** `Tonari hackathon (about USD 20)`, 28,000원, 50/90/100%, 크레딧 차감 전 금액 기준. 알림만 보내고 과금을 멈추지는 않는다.
+- **콜드 스타트:** `/session` 2.5초 (2026-11-08, 1회 측정). 프론트 제한 시간은 10초다.
+- `/healthz`는 Cloud Run이 예약한 경로라 외부에서 404가 나온다.
+
+## 5. 남은 확인
+
+| 작업 | 상태 | 완료 증거 |
 |---|---|---|
-| 실제 API origin/허용 web origin, 세션 수명·이미지 한도·상태값 합의 | 백엔드+프론트 | 위 계약과 차이 기록, fixture/adapter 테스트 갱신 |
-| 세션 발급·인증, 등록 화면 식별, 검수 flow 제공 | 백엔드 | 실제 요청으로 각 응답과 오류 확인 |
-| 원본 사진 폐기·로그 제외·요청/비용 제한·민감 화면 거절 | 백엔드 | 서버 구현 및 검증 결과 |
-| 실제 API에 `/` 연결, CORS/만료/취소/재촬영 확인 | 공동 | 실서버에서 시작→3개 진료과→안전 멈춤→안내 종료 |
-| 일본어 안내 음원 생성·검수·배포 위치 | 음원 준비 담당+프론트 | 음원 파일,step/version 매핑,실기 청취 |
-| HTTPS 환경 iPhone/Android 촬영·음성·화면읽기 | 프론트+검증 담당 | 기종/OS/browser/URL별 기록 |
-| 호스팅 배포 및 공개 URL 확인 | 공동 | 별도 배포/검증 기록. 이 PR 자체는 배포가 아님 |
+| 세션 발급·인증, 등록 화면 식별, 검수 flow 제공 | 완료 | `api:check` 11/11 (합성 화면) |
+| 실제 API에 `/` 연결, CORS | 완료 | 배포 주소에서 안내 종료까지 완주 (합성 카메라) |
+| 호스팅 배포 | 완료 | Firebase Hosting, Cloud Run |
+| 일본어 안내 음원 | 생성·연결 완료, 실폰 청취 남음 | `voice-manifest.json` |
+| 폰으로 찍은 사진의 식별 정확도 | 미실시 | `npm run eval:identify -w @tonari/api -- <사진 폴더>` 결과 |
+| HTTPS 환경 iPhone/Android 촬영·음성·화면읽기 | 미실시 | 기종/OS/browser별 기록 |
+| 사진 폐기 | 코드 확인 | 서버 코드는 사진을 저장·로그하지 않고 처리 후 메모리를 지운다. Vertex AI 쪽 처리 방침은 별도 확인 필요 |
 
 음원은 `apps/web/src/content/voice-manifest.json`이 문장→파일을 매핑한다. `npm run voice:generate`(gcloud 로그인, Text-to-Speech API 필요)로 `flows/`와 `copy/ja.ts`의 문장을 Chirp 3 HD MP3로 다시 만든다. 파일이 없거나 실패하면 기기 내 일본어 음성으로 대체한다. 마이크/Live WebSocket/조작음 자동 진행은 이번 범위 밖이다.
 
@@ -160,4 +189,4 @@ npm run format:check
 npm run test:e2e
 ```
 
-E2E에는 Google Chrome이 필요하고5180포트를 사용한다. 실제 기기·서버 대신 합성 카메라/API/오디오 대역을 쓴다. 검증 당시52개 단위 테스트·31개 브라우저 테스트가 통과했으며 실제 서버/실폰은 미검증이다. 정확한 시각과 대상은 [검증 기록](frontend-status.md)을 확인한다. 제출 저장소에서 GitHub Actions/Pages는 사용할 수 없으므로 자동 CI나 배포가 있다고 가정하지 않는다.
+E2E에는 Google Chrome이 필요하고5180포트를 사용한다. 실제 기기·서버 대신 합성 카메라/API/오디오 대역을 쓴다. 테스트 결과와 시각은 [검증 기록](frontend-status.md)을 확인한다. 제출 저장소에서 GitHub Actions/Pages는 사용할 수 없으므로 자동 CI나 배포가 있다고 가정하지 않는다.
