@@ -32,3 +32,12 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 *.log
+
+# Local verification artifacts
+playwright-report/
+test-results/
+.playwright-cli/
+docs/private/
+
+# Firebase local cache
+.firebase/

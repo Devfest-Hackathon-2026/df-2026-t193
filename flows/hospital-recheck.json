@@ -1,0 +1,169 @@
+{
+  "flow_id": "hospital-recheck",
+  "machine_id": "mock-hospital-v1",
+  "source": "mock",
+  "collected_at": "2026-11-06",
+  "reviewed": true,
+  "stages": [
+    "受付",
+    "診療科",
+    "入力",
+    "完了"
+  ],
+  "screens": [
+    {
+      "screen_id": "start",
+      "description": "再診受付の開始画面",
+      "first_step": "s1"
+    },
+    {
+      "screen_id": "department",
+      "description": "診療科選択",
+      "first_step": "s2"
+    },
+    {
+      "screen_id": "confirmation",
+      "description": "模擬端末の確認画面（個人情報なし）",
+      "first_step": "s5"
+    },
+    {
+      "screen_id": "finished",
+      "description": "模擬端末の終了画面",
+      "first_step": "s6"
+    }
+  ],
+  "steps": {
+    "s1": {
+      "type": "guide",
+      "stage": 0,
+      "instruction": [
+        "右下の、",
+        "緑の『受付』を",
+        "押してください"
+      ],
+      "reason": "受付を始めるボタンです",
+      "target": {
+        "row": 3,
+        "col": 3,
+        "label": "受付",
+        "color": "#1E7F3C"
+      },
+      "next": "s2"
+    },
+    "s2": {
+      "type": "choice",
+      "stage": 1,
+      "question": [
+        "どの科を",
+        "受診しますか"
+      ],
+      "options": [
+        {
+          "id": "internal",
+          "label": "内科",
+          "next": "s3-internal"
+        },
+        {
+          "id": "surgery",
+          "label": "外科",
+          "next": "s3-surgery"
+        },
+        {
+          "id": "orthopedics",
+          "label": "整形外科",
+          "next": "s3-orthopedics"
+        }
+      ]
+    },
+    "s3-internal": {
+      "type": "guide",
+      "stage": 1,
+      "instruction": [
+        "左上の、",
+        "青の『内科』を",
+        "押してください"
+      ],
+      "reason": "お伝えいただいた診療科です",
+      "target": {
+        "row": 1,
+        "col": 1,
+        "label": "内科",
+        "color": "#0B5CAD"
+      },
+      "next": "s4"
+    },
+    "s3-surgery": {
+      "type": "guide",
+      "stage": 1,
+      "instruction": [
+        "上の真ん中の、",
+        "青の『外科』を",
+        "押してください"
+      ],
+      "reason": "お伝えいただいた診療科です",
+      "target": {
+        "row": 1,
+        "col": 2,
+        "label": "外科",
+        "color": "#0B5CAD"
+      },
+      "next": "s4"
+    },
+    "s3-orthopedics": {
+      "type": "guide",
+      "stage": 1,
+      "instruction": [
+        "右上の、",
+        "青の『整形外科』を",
+        "押してください"
+      ],
+      "reason": "お伝えいただいた診療科です",
+      "target": {
+        "row": 1,
+        "col": 3,
+        "label": "整形外科",
+        "color": "#0B5CAD"
+      },
+      "next": "s4"
+    },
+    "s4": {
+      "type": "stop",
+      "stage": 2,
+      "reason": "personal_info",
+      "resumable": true,
+      "instruction": [
+        "ここからは、",
+        "ご自分で",
+        "入力してください"
+      ],
+      "note": [
+        "番号は",
+        "読み上げません"
+      ],
+      "next": "s5"
+    },
+    "s5": {
+      "type": "guide",
+      "stage": 2,
+      "instruction": [
+        "右下の、",
+        "緑の『確定』を",
+        "押してください"
+      ],
+      "reason": "入力した内容で受付を終えるボタンです",
+      "target": {
+        "row": 3,
+        "col": 3,
+        "label": "確定",
+        "color": "#1E7F3C"
+      },
+      "next": "s6"
+    },
+    "s6": {
+      "type": "end",
+      "stage": 3
+    }
+  },
+  "schema_version": 1,
+  "version": "1"
+}
