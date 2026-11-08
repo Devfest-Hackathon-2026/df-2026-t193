@@ -1,8 +1,8 @@
-# となりナビ — フロントエンド
+# となりナビ
 
-公開 URL（Firebase Hosting）: https://axial-sunup-488315-k1.web.app — `/demo` は見本モード、`/mock/hospital` は模擬受付機。実 API は未接続です。
+公開 URL（Firebase Hosting）: https://axial-sunup-488315-k1.web.app — `/` は実カメラと Cloud Run の API（Gemini で画面を確認）、`/demo` は見本モード、`/mock/hospital` は模擬受付機です。
 
-承認された画面デザインを React に実装したローカル版です。実際の AI・バックエンドは未接続です。
+登録済みの模擬受付機の画面を一度撮ると、次に押すボタンを声と画面で案内します。対応しているのは登録済みの模擬受付機だけです。
 
 ```sh
 npm ci
@@ -10,7 +10,7 @@ npm run dev
 ```
 
 - `/demo`: 見本モード。サーバーなしで病院の案内を体験できます。
-- `/`: 実カメラと API クライアント。API 未設定の場合は接続準備中と表示します。
+- `/`: 実カメラと API クライアント。ローカルでは `apps/web/.env.local` の `VITE_API_BASE_URL` が未設定だと接続準備中と表示します。
 - `/mock/hospital`: タブレット等で操作する模擬受付機。個人情報は入力しません。
 
 ```sh
@@ -23,14 +23,13 @@ npm run test:e2e
 
 E2E はインストール済みの Google Chrome を使用し、5180 ポートでテスト用サーバーを起動します。カメラ映像・API 応答・音声再生オブジェクトはテスト用です。実機検証の代わりではありません。
 
-案内音声は各手順に入ると自動で再生します（Google Cloud Text-to-Speech で事前生成した音声。文言を変えたら `npm run voice:generate` で作り直します）。実 API 接続、iPhone/Android 実機確認は残っています。
+案内音声は各手順に入ると自動で再生します（Google Cloud Text-to-Speech で事前生成した音声。文言を変えたら `npm run voice:generate` で作り直します）。iPhone/Android 実機確認は残っています。
 
 ```sh
-npm run build
 npx firebase-tools deploy --only hosting
 ```
 
-デプロイは `firebase.json`（SPA の書き換え、キャッシュ、カメラ以外の権限を止めるヘッダー）に従います。
+デプロイ時に `npm run build:prod` が自動で実行され、Cloud Run の API アドレスが組み込まれます。設定は `firebase.json`（SPA の書き換え、キャッシュ、カメラ以外の権限を止めるヘッダー）にあります。
 
 - [バックエンド接続・API 契約・残作業](docs/backend-handoff.md)
 - [仕様・計画・作業一覧](specs/001-frontend-foundation/spec.md)

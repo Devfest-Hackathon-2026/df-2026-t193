@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "npm run dev -w @tonari/web",
     "build": "npm run build -w @tonari/web",
+    "build:prod": "VITE_API_BASE_URL=https://tonari-api-791151105038.asia-northeast1.run.app npm run build",
     "test": "vitest run",
     "test:e2e": "npm run test:e2e -w @tonari/web",
     "typecheck": "tsc -p packages/shared --noEmit && tsc -p apps/web --noEmit && tsc -p apps/api --noEmit",
