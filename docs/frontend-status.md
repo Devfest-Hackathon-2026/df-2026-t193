@@ -26,10 +26,10 @@
 | 디자인 픽셀 비교 | PASS | 00:34 JST,360×640·390×844의 안내 화면에서 상단70px 제외 픽셀 차이0. 배지만 견본 표기로 변경 |
 | 추가 시각 점검 | PASS | 00:35 JST,확대·모의 접수기 직접 캡처 확인. 고대비 음성행2px border, pageerror0 |
 | 자동 음성·음원 (2026-11-08) | PASS | 단위64, E2E38(가짜 음성·차단된 자동 재생·파일 fallback·파일 재생 포함), typecheck/build/format. 브라우저 pane에서 s1-first.mp3 로드·재생 상태 확인. 실폰 청취는 NOT_RUN |
+| Firebase Hosting 배포 (2026-11-08) | PASS | https://axial-sunup-488315-k1.web.app, 프로젝트 axial-sunup-488315-k1. `/`·`/demo`·`/mock/hospital` 200, 음원 audio/mpeg, 보안 헤더·캐시 확인. 브라우저 pane(음소거)에서 /demo 안내·음원 재생 상태, 390×844·360×640 레이아웃 확인. 실폰 NOT_RUN |
 | 실제 API | NOT_RUN | 서버 주소·계약 합의 대기. API 대역 성공은 서버 성공이 아님 |
 | 실제 카메라/소리/화면읽기 | NOT_RUN | iPhone/Android 실기·VoiceOver/TalkBack·실제 일본어 소리 확인 필요 |
 | 고령자 사용성 | NOT_RUN | 효과 검증을 주장하지 않음 |
-| 배포 | NOT_RUN | GitHub 코드 공유와 별개 |
 
 검증 대상 소스 집합 SHA-256: `30d97e7d95e0eb2e10c00b0b0cf9b9c2278b2468de446f23392b7aadd87c5bc0`. 집합은 web src/e2e, shared src, flows, root package/lock, web Playwright/Vite config/index.html이다. CSS·후속 공통 자산을 포함한 최종 배포 후보를 의미하지 않는다(배포 후보는 아직 없음). web src에는 CSS가 포함된다.
 
@@ -44,7 +44,7 @@
 1. API 계약 합의 및 실제 서버 왕복/CORS/인증/사진 폐기 증거.
 2. 자동 음성 안내와 Cloud TTS 음원(ja-JP-Chirp3-HD-Kore, 속도0.9, 13개)은 연결됨. 실폰에서 소리·자동 재생·VoiceOver와의 겹침 확인은 NOT_RUN. 화면읽기 사용자를 위한 자동 음성 끄기 설정은 없음.
 3. 실제 HTTPS iPhone/Android의 카메라·회전·음성·화면읽기·태블릿 촬영 동선 확인.
-4. 배포와 공개 URL 검증은 별도 작업.
+4. 배포는 완료(Firebase Hosting). `/`는 API 주소(`VITE_API_BASE_URL`)가 없어 연결 준비 화면을 보인다. API가 생기면 빌드 시 주소를 넣고 다시 배포한다.
 
 ## 로컬 확인
 

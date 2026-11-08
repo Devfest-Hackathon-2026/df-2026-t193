@@ -38,3 +38,6 @@ playwright-report/
 test-results/
 .playwright-cli/
 docs/private/
+
+# Firebase local cache
+.firebase/
