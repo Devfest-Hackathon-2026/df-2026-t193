@@ -3,6 +3,7 @@
 import { GoogleGenAI } from '@google/genai';
 import type { Flow, IdentifyResult } from '@tonari/shared';
 import type { Config } from './config';
+import { SCREEN_HINTS } from './screen-hints';
 
 export type Identifier = (jpeg: Uint8Array, signal: AbortSignal) => Promise<IdentifyResult>;
 
@@ -60,10 +61,14 @@ export function createGeminiIdentifier(config: Config, flows: Map<string, Flow>)
     'あなたは、高齢者がキオスク端末の画面を撮った写真を分類します。写真の画面が次のどれに当たるか、label を一つ選んでください。',
     '',
     '登録済みの画面:',
-    ...candidates.map((c) => `- ${c.key}: 端末 ${c.flow.machine_id} の「${c.screen.description}」`),
+    ...candidates.map((c) => {
+      const hint = SCREEN_HINTS[c.key];
+      return `- ${c.key}: 端末 ${c.flow.machine_id} の「${c.screen.description}」${hint ? `。見分け方: ${hint}` : ''}`;
+    }),
     '',
     'それ以外:',
-    '- sensitive: 暗証番号・パスワード、カード番号、口座、ATMや送金、氏名・生年月日・保険証番号などの個人情報が入力・表示されている画面',
+    '- sensitive: 暗証番号・パスワード、カード番号、口座、ATMや送金、氏名・生年月日・保険証番号などの個人情報が入力・表示されている画面。' +
+      'また、本人に入力をうながす画面（「ご自分で入力」「入力してください」「入力を終える」など）は、入力欄や個人情報が写っていなくても必ず sensitive',
     '- unsupported: キオスク端末なのははっきり分かるが、登録済みの画面のどれでもない',
     '- unknown: ぼやけている、画面が写っていない、判断に自信がない',
     '',

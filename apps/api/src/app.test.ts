@@ -227,3 +227,11 @@ describe('config', () => {
     expect(() => loadConfig({ NODE_ENV: 'production', JWT_SECRET: 'x' })).toThrow('IDENTIFIER');
   });
 });
+
+describe('screen hints', () => {
+  it('every reviewed screen has a visual hint for the model', async () => {
+    const { SCREEN_HINTS } = await import('./screen-hints');
+    const { flows } = setup();
+    for (const c of candidatesOf(flows)) expect(SCREEN_HINTS[c.key], c.key).toBeTruthy();
+  });
+});
