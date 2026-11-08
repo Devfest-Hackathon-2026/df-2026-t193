@@ -31,3 +31,12 @@ export function speechVariants(flow: Flow) {
       : []),
   ]);
 }
+/** Fixed app copy that is spoken outside a flow step. */
+export function fixedSpeech() {
+  return [
+    { file: 'capture', text: ja.speech.capture },
+    { file: 'demo-capture', text: ja.speech.demoCapture },
+    { file: 'staff', text: ja.staffMessage },
+    ...Object.entries(ja.errors).map(([kind, text]) => ({ file: `error-${kind}`, text })),
+  ];
+}

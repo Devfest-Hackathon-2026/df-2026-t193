@@ -95,7 +95,42 @@ npm run dev
 
 자세한 계약: [contracts.md](../specs/001-frontend-foundation/contracts.md).
 
-## 4. 담당별 남은 작업
+## 4. 서버가 생기면 바로 할 확인
+
+### 계약 검사기
+
+프론트가 실제로 쓰는 HTTP adapter와 검증 코드를 그대로 써서 서버를 검사한다. 토큰은 출력하지 않는다.
+
+```sh
+npm run api:check -- https://<API base> --origin https://axial-sunup-488315-k1.web.app
+```
+
+| 검사 | 기대 |
+|---|---|
+| CORS preflight | 웹 origin 허용, `authorization` 헤더 허용 |
+| `POST /session` | 미래 `expires_at`, `Retry-After` 노출 |
+| 토큰 없는 `/identify` | 401 |
+| 모의 접수기 start / department / confirmation / finished | `ok`와 정확한 screen/step, flow·장면 검증 통과 |
+| 개인정보 입력 화면, 빈 화면 | `ok`가 아님 |
+| 없는 flow 버전 | 거절 |
+
+입력 사진은 `apps/web/e2e/fixtures/kiosk/*.jpg`다. 우리 모의 접수기(`/mock/hospital`)를 태블릿 세로 크기로 찍은 합성 화면이며 실제 기기·사람 사진이 아니다. 모의 접수기를 바꾸면 dev 서버를 켠 뒤 `npm run fixtures:kiosk -- http://127.0.0.1:5173`로 다시 만든다. 실제 폰 카메라 사진은 각도·반사가 있으므로 이 검사 통과가 실촬영 식별 성능을 뜻하지 않는다.
+
+### 권장 배포 연결: Firebase Hosting → Cloud Run (같은 origin)
+
+웹은 이미 Firebase Hosting(`axial-sunup-488315-k1`)에 있다. API를 같은 프로젝트의 Cloud Run에 올리면 Hosting rewrite로 `/api/**`를 서비스에 넘길 수 있다. 같은 origin이라 CORS가 필요 없다.
+
+```json
+{ "source": "/api/**", "run": { "serviceId": "<service>", "region": "asia-northeast1" } }
+```
+
+- `firebase.json`의 `rewrites`에서 `**` 규칙 **앞에** 넣는다. 서비스가 실제로 있어야 배포가 통과한다.
+- Cloud Run은 경로를 그대로 받으므로 서버가 `/api/session`, `/api/identify`, `/api/flows/:id`를 처리하거나 prefix를 제거해야 한다.
+- 웹 빌드는 `VITE_API_BASE_URL=/api npm run build` 후 `npx firebase-tools deploy --only hosting`.
+- Hosting 경유 요청의 제한 시간은 60초다. 프론트 identify 제한 시간 20초보다 길다.
+- 다른 origin(Cloud Run URL 직접)으로 연결하면 위 CORS 항목을 서버가 처리해야 한다.
+
+## 5. 담당별 남은 작업
 
 | 작업 | 담당 영역 | 완료 증거 |
 |---|---|---|
@@ -109,7 +144,7 @@ npm run dev
 
 음원은 `apps/web/src/content/voice-manifest.json`이 문장→파일을 매핑한다. `npm run voice:generate`(gcloud 로그인, Text-to-Speech API 필요)로 `flows/`와 `copy/ja.ts`의 문장을 Chirp 3 HD MP3로 다시 만든다. 파일이 없거나 실패하면 기기 내 일본어 음성으로 대체한다. 마이크/Live WebSocket/조작음 자동 진행은 이번 범위 밖이다.
 
-## 5. 코드를 볼 순서와 확인 명령
+## 6. 코드를 볼 순서와 확인 명령
 
 1. [HTTP adapter](../apps/web/src/api/http.ts), [내부 인터페이스](../apps/web/src/api/gateway.ts)
 2. [Identify 런타임 스키마](../packages/shared/src/identify.ts), [Flow 스키마](../packages/shared/src/flow.ts)

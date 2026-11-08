@@ -27,6 +27,7 @@
 | 추가 시각 점검 | PASS | 00:35 JST,확대·모의 접수기 직접 캡처 확인. 고대비 음성행2px border, pageerror0 |
 | 자동 음성·음원 (2026-11-08) | PASS | 단위64, E2E38(가짜 음성·차단된 자동 재생·파일 fallback·파일 재생 포함), typecheck/build/format. 브라우저 pane에서 s1-first.mp3 로드·재생 상태 확인. 실폰 청취는 NOT_RUN |
 | Firebase Hosting 배포 (2026-11-08) | PASS | https://axial-sunup-488315-k1.web.app, 프로젝트 axial-sunup-488315-k1. `/`·`/demo`·`/mock/hospital` 200, 음원 audio/mpeg, 보안 헤더·캐시 확인. 브라우저 pane(음소거)에서 /demo 안내·음원 재생 상태, 390×844·360×640 레이아웃 확인. 실폰 NOT_RUN |
+| 음성 보완·계약 검사기 (2026-11-08) | PASS | 자동 읽기 켜기/끄기(도움·사용법 시트, 기기에 저장), 촬영 화면·식별 오류 음성, 직원 화면 「読み上げる」(누를 때만). Cloud TTS 25개로 재생성. `npm run api:check`를 계약 준수/위반/CORS 없음 대역 서버 3종에 돌려 PASS/FAIL 구분 확인. 360×640 도움 시트·직원 화면 렌더 확인(음소거) |
 | 실제 API | NOT_RUN | 서버 주소·계약 합의 대기. API 대역 성공은 서버 성공이 아님 |
 | 실제 카메라/소리/화면읽기 | NOT_RUN | iPhone/Android 실기·VoiceOver/TalkBack·실제 일본어 소리 확인 필요 |
 | 고령자 사용성 | NOT_RUN | 효과 검증을 주장하지 않음 |

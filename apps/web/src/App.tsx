@@ -11,6 +11,7 @@ import { GatewayError } from './api/gateway';
 import { assertSupportedScenes } from './content/hospital-scenes';
 import { HospitalKiosk } from './mock/HospitalKiosk';
 import { primeGuidanceAudio } from './audio/unlock';
+import { setAutoVoice, useAutoVoice } from './audio/preference';
 const gateway = createHttpGateway(import.meta.env.VITE_API_BASE_URL ?? '');
 export function App() {
   return location.pathname === '/mock/hospital' ? <HospitalKiosk /> : <GuideApp />;
@@ -158,6 +159,7 @@ function GuideApp() {
           <button className="option" onClick={() => dispatch({ type: 'STAFF' })}>
             {ja.staffAction}
           </button>
+          <AutoVoiceToggle />
           <button className="close" onClick={close}>
             {ja.return}
           </button>
@@ -173,11 +175,20 @@ function GuideApp() {
               </li>
             ))}
           </ol>
+          <AutoVoiceToggle />
           <button className="close" onClick={close}>
             {ja.restart}
           </button>
         </Sheet>
       )}
     </>
+  );
+}
+function AutoVoiceToggle() {
+  const on = useAutoVoice();
+  return (
+    <button className="option" onClick={() => setAutoVoice(!on)}>
+      {on ? ja.autoVoiceOff : ja.autoVoiceOn}
+    </button>
   );
 }

@@ -8,6 +8,7 @@ import { useGuidanceAudio } from '../hooks/useGuidanceAudio';
 import { guidanceSpeech } from '../content/speech';
 import { voiceFile } from '../content/voice';
 import { primeGuidanceAudio } from '../audio/unlock';
+import { useAutoVoice } from '../audio/preference';
 export function GuidanceScreen({
   state,
   demo,
@@ -22,12 +23,13 @@ export function GuidanceScreen({
   const visual = state.flow!.steps[id];
   const isChoice = step.type === 'choice',
     isEnd = step.type === 'end';
+  const autoVoice = useAutoVoice();
   const text = guidanceSpeech(step, { first: state.previousStep === null });
   const audio = useGuidanceAudio(
     `${state.revision}:${state.overlay}`,
     text,
     voiceFile(state.flow!, text),
-    true,
+    autoVoice,
   );
   const open = (overlay: AppState['overlay']) => {
     audio.stop();
