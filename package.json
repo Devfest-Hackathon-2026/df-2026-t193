@@ -17,11 +17,13 @@
     "voice:generate": "vite-node apps/web/scripts/generate-voice.ts --",
     "fixtures:kiosk": "vite-node apps/web/scripts/make-kiosk-fixtures.ts --",
     "api:check": "vite-node apps/web/scripts/check-api.ts --",
+    "api:stress": "vite-node apps/web/scripts/stress-identify.ts --",
     "dev:api": "npm run dev -w @tonari/api"
   },
   "devDependencies": {
     "prettier": "3.6.2",
     "typescript": "^5.8.0",
-    "vitest": "^3.2.0"
+    "vite-node": "^3.2.4",
+    "vitest": "^4.1.12"
   }
 }
