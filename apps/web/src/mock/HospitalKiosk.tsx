@@ -84,7 +84,7 @@ export function HospitalKiosk() {
               >
                 もどる
               </button>
-              <button className="kiosk-hit" style={box(232, 244, 108, 60)} onClick={() => go('department')}>
+              <button className="kiosk-hit" style={box(222, 244, 108, 60)} onClick={() => go('department')}>
                 {c.receipt}
               </button>
             </>
@@ -111,13 +111,13 @@ export function HospitalKiosk() {
               >
                 {c.clear}
               </button>
-              <button className="kiosk-hit" style={box(232, 244, 108, 60)} onClick={() => go('confirmation')}>
+              <button className="kiosk-hit" style={box(222, 244, 108, 60)} onClick={() => go('confirmation')}>
                 {c.next}
               </button>
             </>
           )}
           {screen === 'confirmation' && (
-            <button className="kiosk-hit" style={box(232, 244, 108, 60)} onClick={() => go('finished')}>
+            <button className="kiosk-hit" style={box(222, 244, 108, 60)} onClick={() => go('finished')}>
               {c.confirmation}
             </button>
           )}

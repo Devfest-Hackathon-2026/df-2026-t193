@@ -2,13 +2,13 @@ import registered from '../../../../flows/hospital-recheck.json';
 import type { Flow } from '@tonari/shared';
 export const asset = (name: string) => `/assets/tonari/${name}.svg`;
 export const scenes: Record<string, { name: string; x?: number; y?: number }> = {
-  s1: { name: 'terminal', x: 286, y: 274 },
+  s1: { name: 'terminal', x: 276, y: 274 },
   s2: { name: 'terminal-choices' },
   's3-internal': { name: 'terminal-internal', x: 106.5, y: 161 },
   's3-surgery': { name: 'terminal-surgery', x: 198.5, y: 161 },
   's3-orthopedics': { name: 'terminal-orthopedics', x: 290.5, y: 161 },
   s4: { name: 'terminal-input' },
-  s5: { name: 'terminal-confirm', x: 286, y: 274 },
+  s5: { name: 'terminal-confirm', x: 276, y: 274 },
   s6: { name: 'terminal-done' },
 };
 export function assertSupportedScenes(flow: Flow) {
