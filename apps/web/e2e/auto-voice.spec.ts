@@ -16,7 +16,7 @@ test('each step speaks once on arrival after the start tap', async ({ page }) =>
   await fakeSpeech(page, 'ok', 1500);
   await begin(page);
   await expect(voice(page)).toHaveAttribute('aria-pressed', 'true');
-  await expect(voice(page)).toHaveText('読み上げを止める');
+  await expect(voice(page)).toHaveText('声を止める');
   expect(await spoken(page)).toEqual([
     '右下の、緑の『受付』を押してください。受付を始めるボタンです。押したら、この画面の「押しました」を押してください。',
   ]);

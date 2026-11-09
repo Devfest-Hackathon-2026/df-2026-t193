@@ -40,5 +40,6 @@ export function fixedSpeech() {
     { file: 'staff', text: ja.staffMessage },
     ...Object.entries(ja.errors).map(([kind, text]) => ({ file: `error-${kind}`, text })),
     ...Object.entries(ja.cameraErrors).map(([kind, text]) => ({ file: `camera-${kind}`, text })),
+    ...Object.entries(ja.rejected).map(([kind, text]) => ({ file: `rejected-${kind}`, text })),
   ];
 }

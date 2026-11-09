@@ -36,6 +36,8 @@
     "カメラが見つかりません。": "/assets/tonari/voice/common/camera-missing.mp3",
     "カメラを使用中です。他のアプリを閉じてお試しください。": "/assets/tonari/voice/common/camera-busy.mp3",
     "カメラを使うには安全な接続で開いてください。": "/assets/tonari/voice/common/camera-insecure.mp3",
-    "撮影できませんでした。もう一度お試しください。": "/assets/tonari/voice/common/camera-failed.mp3"
+    "撮影できませんでした。もう一度お試しください。": "/assets/tonari/voice/common/camera-failed.mp3",
+    "この画面は個人情報があるため、案内できません。": "/assets/tonari/voice/common/rejected-sensitive.mp3",
+    "この機械には、まだ対応していません。": "/assets/tonari/voice/common/rejected-unsupported.mp3"
   }
 }
