@@ -149,8 +149,15 @@ test('mock kiosk completes by its own buttons', async ({ page }) => {
   await expect(page.getByText('デモ用の模擬端末')).toBeVisible();
   await page.getByRole('button', { name: '受付', exact: true }).click();
   await page.getByRole('button', { name: '外科', exact: true }).click();
+  await expect(page.locator('h1')).toHaveText('診察券番号を入力してください');
   await expect(page.locator('input')).toHaveCount(0);
-  await page.getByRole('button', { name: '入力を終える（見本）' }).click();
+  const next = page.getByRole('button', { name: '次へ', exact: true });
+  await expect(next).toBeDisabled();
+  await page.getByRole('button', { name: '1', exact: true }).click();
+  await page.getByRole('button', { name: '2', exact: true }).click();
+  // Only the count is shown, never the digits.
+  await expect(page.locator('.kiosk-field')).toHaveText('●●');
+  await next.click();
   await page.getByRole('button', { name: '確定', exact: true }).click();
   await expect(page.locator('h1')).toHaveText('ありがとうございました');
 });
@@ -327,6 +334,7 @@ test('closing the personal-information stop never tells the user to press a butt
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.getByRole('button', { name: '案内に戻る', exact: true }).click();
   await expect(page.locator('h1')).toHaveText('ここからはご自分で');
+  await expect(page.locator('.subcopy')).toHaveText('診察券番号は受付機に入力してください。');
   await expect(page.locator('h1 .key')).toHaveCount(0);
   await expect(page.getByRole('button', { name: /拡大/ })).toHaveCount(0);
   await primary(page).click();

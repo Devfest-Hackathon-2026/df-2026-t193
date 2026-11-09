@@ -7,7 +7,7 @@ export const scenes: Record<string, { name: string; x?: number; y?: number }> = 
   's3-internal': { name: 'terminal-internal', x: 106.5, y: 161 },
   's3-surgery': { name: 'terminal-surgery', x: 198.5, y: 161 },
   's3-orthopedics': { name: 'terminal-orthopedics', x: 290.5, y: 161 },
-  s4: { name: 'terminal-choices' },
+  s4: { name: 'terminal-input' },
   s5: { name: 'terminal-confirm', x: 286, y: 274 },
   s6: { name: 'terminal-done' },
 };
