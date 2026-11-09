@@ -59,7 +59,9 @@ export function CaptureScreen({
     [screen, setScreen] = useState(
       state.stepId === 's5' ? 'confirmation' : state.stepId && state.stepId !== 's1' ? 'department' : 'start',
     );
-  const [wait, setWait] = useState(Date.now() < state.retryAt);
+  const secondsLeft = () => Math.max(0, Math.ceil((state.retryAt - Date.now()) / 1000));
+  const [remaining, setRemaining] = useState(secondsLeft);
+  const wait = remaining > 0;
   const captureError = !demo ? camera.error : null;
   const phase = captureError
     ? `camera-${captureError}`
@@ -84,11 +86,15 @@ export function CaptureScreen({
             ? ja.speech.capture
             : '';
   useEffect(() => {
-    const timer = setTimeout(
-      () => setWait(false),
-      Math.max(0, Math.min(state.retryAt - Date.now(), 2147483647)),
-    );
-    return () => clearTimeout(timer);
+    setRemaining(secondsLeft());
+    if (Date.now() >= state.retryAt) return;
+    const timer = setInterval(() => {
+      const left = secondsLeft();
+      setRemaining(left);
+      if (left <= 0) clearInterval(timer);
+    }, 250);
+    return () => clearInterval(timer);
+    // secondsLeft reads only state.retryAt.
   }, [state.retryAt]);
   const scene =
     screen === 'department'
@@ -147,6 +153,7 @@ export function CaptureScreen({
             {ja.errors[state.error]}
           </p>
         )}
+        {wait && <p className="feedback">{ja.waitSeconds(remaining)}</p>}
         {!demo && (
           <>
             <p className="camera-notice">{ja.privacy}</p>

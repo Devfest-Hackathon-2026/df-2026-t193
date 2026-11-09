@@ -39,3 +39,4 @@ dialog:has(.safety-icon){border-top:10px solid var(--red)}dialog:has(.safety-ico
 @media(max-height:600px){.auto-voice-help{display:none}}
 .mock-kiosk .kiosk-display{width:min(100%,calc((100svh - 230px)*304/276));margin-inline:auto}
 @media(max-height:600px){.view-guide:not([data-phase=department]) .world{min-height:calc(clamp(0px,76vw,364.8px) - 34px)}.view-guide:not([data-phase=department]) .world>img{object-position:center 40%}.view-choice .world{min-height:24px}.aids .voice,.aids .help{min-height:48px}}
+.demo{font-size:1rem}

@@ -274,3 +274,31 @@ for (const [status, reason] of [
     await expect.poll(async () => (await spoken(page)).at(-1)).toBe(reason);
     await expect(page.locator('.world img')).toHaveCount(0);
   });
+test('rate limit shows the seconds left, then allows a manual retake only', async ({ page }) => {
+  await fakeCamera(page);
+  let identifyCalls = 0;
+  await page.route('**/api/session', (route) =>
+    route.fulfill({ json: { token: 't', expires_at: new Date(Date.now() + 600000).toISOString() } }),
+  );
+  await page.route('**/api/identify', (route) => {
+    identifyCalls++;
+    return route.fulfill({ status: 429, headers: { 'Retry-After': '3' }, json: {} });
+  });
+  await page.goto('/');
+  await primary(page).click();
+  await expect(primary(page)).toBeEnabled();
+  await primary(page).click();
+  await expect(page.getByText(/あと\d+秒で撮れます/)).toBeVisible();
+  await expect(primary(page)).toBeDisabled();
+  await expect(primary(page)).toBeEnabled({ timeout: 5000 });
+  await expect(page.getByText(/あと\d+秒で撮れます/)).toHaveCount(0);
+  await page.waitForTimeout(400);
+  expect(identifyCalls).toBe(1);
+});
+test('real path badge says it is a demo device', async ({ page }) => {
+  await fakeCamera(page);
+  await page.goto('/');
+  await expect(page.locator('.demo')).toHaveText('デモ用の端末');
+  await primary(page).click();
+  await expect(page.locator('.demo')).toHaveText('デモ用の端末');
+});
