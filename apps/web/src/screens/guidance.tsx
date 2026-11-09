@@ -119,6 +119,13 @@ export function GuidanceScreen({
             </fieldset>
           )}
           {isEnd && <p className="subcopy">{ja.thanks}</p>}
+          {isStop && step.reason === 'personal_info' && (
+            <p className="subcopy">
+              {ja.safeInputParts.map((part) => (
+                <Word key={part}>{part}</Word>
+              ))}
+            </p>
+          )}
           <Primary
             disabled={isChoice && !selected}
             onClick={isEnd ? () => dispatch({ type: 'RESTART' }) : press}
