@@ -1,8 +1,8 @@
 export const ja = {
   brand: 'となりナビ',
   demo: '見本モード',
-  mock: '模擬端末',
-  camera: 'カメラ',
+  mock: 'デモ用の端末',
+  camera: 'デモ用の端末',
   start: 'はじめる',
   startCopy: '最初の画面を一度撮るだけ。',
   howto: '使い方を見る',
@@ -13,6 +13,7 @@ export const ja = {
   demoCapture: '見本の画面で進みます。写真は送りません。',
   checking: '画面を確認しています',
   checkingSlow: 'もう少しお待ちください。',
+  waitSeconds: (seconds: number) => `あと${seconds}秒で撮れます。`,
   cancel: 'やめて戻る',
   pressed: '押しました',
   step: (n: number, total: number) => `ステップ ${n} / ${total}`,

@@ -7,5 +7,6 @@
 - [남은 작업](05-roadmap.md)
 - [프론트 구현·검증 상태](frontend-status.md)
 - [구현 스펙](../specs/001-frontend-foundation/spec.md)
+- [안정성 보강](../specs/002-stability-hardening/spec.md), [사용성 보강](../specs/003-usability-polish/spec.md), [제출 전 필수 수정](../specs/004-release-blockers/spec.md)
 
 이 저장소의 데모는 등록된 모의 기기 한정이다.

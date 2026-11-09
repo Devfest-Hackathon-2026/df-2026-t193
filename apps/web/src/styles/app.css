@@ -41,3 +41,4 @@ dialog:has(.safety-icon){border-top:10px solid var(--red)}dialog:has(.safety-ico
 @media(max-height:600px){.view-guide:not([data-phase=department]) .world{min-height:calc(clamp(0px,76vw,364.8px) - 34px)}.view-guide:not([data-phase=department]) .world>img{object-position:center 40%}.view-choice .world{min-height:24px}.aids .voice,.aids .help{min-height:48px}}
 /* Input screen: draw the same bezel and white screen as the kiosk scenes, so its text stays readable. */
 .mock-kiosk .kiosk-display{background:#263c43}.mock-kiosk .kiosk-safe{position:absolute;inset:3.62% 3.29%;height:auto;padding:8%;box-sizing:border-box;background:#fff;color:#254655;border-radius:2.63cqw}
+.demo{font-size:1rem}
