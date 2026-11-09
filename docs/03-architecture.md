@@ -1,15 +1,38 @@
-# 현재 프론트 아키텍처
+# 현재 아키텍처
 
-React/TypeScript/Vite와 기존 Zod 절차 엔진을 사용한다. 자세한 설계와 제안 API는 `../specs/001-frontend-foundation/plan.md`, `contracts.md`에 있다.
+```mermaid
+flowchart LR
+  U["폰 브라우저"] -->|"웹 앱, 안내 음원"| H["Firebase Hosting"]
+  U -->|"세션, 사진 1장, 절차 조회"| R["Cloud Run: tonari-api"]
+  R -->|"화면 판정"| G["Gemini 3.5 Flash<br/>Vertex AI"]
+  R -->|"서명 키"| S["Secret Manager"]
+  T["Cloud Text-to-Speech<br/>Chirp 3 HD"] -.->|"배포 전에 음원 생성"| H
+```
+
+핵심은 역할 분리다. **Gemini는 "지금 어느 등록 화면인가"만 판정하고, 다음에 무엇을 누를지는 사람이 검수한 절차 데이터(`flows/`)가 정한다.** 모델 답은 등록 화면 ID, `sensitive`, `unsupported`, `unknown` 중 하나로만 나간다.
+
+## 웹 (`apps/web`)
+
+React/TypeScript/Vite와 Zod 절차 엔진을 사용한다.
 
 - App: 라우트와 요청 조율. 요청 ID/AbortController로 취소한 요청의 결과를 버린다.
 - reducer: 시작/촬영/식별/안내/직원, 임시 선택과 선택 확정, 안전 멈춤, 복귀 지점, 화면 revision 관리.
-- shared: Flow/Identify 런타임 스키마, 참조·중복 ID·기기/버전/첫 단계 관계 검증.
+- shared: Flow/Identify 런타임 스키마, 참조·중복 ID·기기/버전/첫 단계 관계 검증. 서버와 웹이 함께 쓴다.
 - hospital-scenes: 등록된 그림과 목표 위치. 현 버전의 안전 단계/분기 그래프를 고정 검증.
 - useCamera: 후면 카메라, JPEG 생성(긴 변1280px,품질.85,임시2MiB 한도), 취소·숨김·연결 해제·늦은 허용 정리. 마이크 없음.
-- useGuidanceAudio: 한 개의 파일 재생기, 실패/중첩/취소 처리. 최종 파일 URL이 없는 현재는 기기 내 일본어 음성만 사용자 재생 버튼으로 사용한다. 음원 수급/검수 전 자동 음성 안내 제품 완료로 보지 않는다.
-- HTTP gateway: 제안한 session/identify/flows 계약의 클라이언트. 실제 서버와 합의·통합 검증하지 않았다. 토큰/사진은 메모리, POST 자동 재시도 없음.
-- /demo: 외부 API 없이 검수 fixture로 동작. 재촬영에서 견본 화면을 직접 선택한다. AI 기능이 아니다.
-- /mock/hospital: 승인한 SVG의 동일 좌표계를 사용하는 실제 클릭 가능한 모의 접수기. 폰과 원격 동기화하지 않는다.
+- useGuidanceAudio: 단계에 들어가면 안내를 한 번 자동 재생한다. Cloud TTS로 미리 만든 음원을 쓰고, 없거나 실패하면 기기 내 일본어 음성으로 대체한다. 자동 읽기는 끌 수 있다.
+- HTTP gateway: session/identify/flows 클라이언트. 토큰/사진은 메모리, POST 자동 재시도 없음.
+- /demo: 외부 API 없이 검수 fixture로 동작. AI를 쓰지 않는다.
+- /mock/hospital: 실제로 눌러 진행하는 모의 접수기. 폰과 원격 동기화하지 않는다.
 
-공개 백엔드 코드는 제공 저장소에서 확인되지 않았다. 서버의 사진 폐기·비용 제한·모델/인증 동작은 이 프론트 검사로 증명하지 않는다. 배포는 이번 작업에 포함하지 않는다.
+## API (`apps/api`)
+
+Hono + Node.js. 설정은 전부 환경 변수다.
+
+- `POST /session`: HS256 JWT, 30분.
+- `POST /identify`: JPEG 한 장(최대 2MiB)을 Gemini로 판정한다. 나가기 전에 strict 스키마와 검수된 flow로 다시 검증하고, 맞지 않으면 `unknown`을 돌려준다.
+- `GET /flows/:id?version=`: `reviewed: true`인 절차만 돌려준다.
+- 기록은 경로·상태·소요 시간만 남긴다. 사진과 토큰은 저장하거나 기록하지 않는다.
+- 분당/총량 제한(429), 긴급 정지(503), CORS 허용 목록.
+
+배포 구성과 운영 명령은 [backend-handoff](backend-handoff.md)에 있다. 실제 폰 사진의 식별 정확도는 아직 측정하지 않았다.

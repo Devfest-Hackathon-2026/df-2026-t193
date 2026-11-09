@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "npm run dev -w @tonari/web",
     "build": "npm run build -w @tonari/web",
+    "build:prod": "VITE_API_BASE_URL=https://tonari-api-791151105038.asia-northeast1.run.app npm run build",
     "test": "vitest run",
     "test:e2e": "npm run test:e2e -w @tonari/web",
     "typecheck": "tsc -p packages/shared --noEmit && tsc -p apps/web --noEmit && tsc -p apps/api --noEmit",
@@ -16,11 +17,13 @@
     "voice:generate": "vite-node apps/web/scripts/generate-voice.ts --",
     "fixtures:kiosk": "vite-node apps/web/scripts/make-kiosk-fixtures.ts --",
     "api:check": "vite-node apps/web/scripts/check-api.ts --",
+    "api:stress": "vite-node apps/web/scripts/stress-identify.ts --",
     "dev:api": "npm run dev -w @tonari/api"
   },
   "devDependencies": {
     "prettier": "3.6.2",
     "typescript": "^5.8.0",
-    "vitest": "^3.2.0"
+    "vite-node": "^3.2.4",
+    "vitest": "^4.1.12"
   }
 }

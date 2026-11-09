@@ -28,7 +28,9 @@
 | 자동 음성·음원 (2026-11-08) | PASS | 단위64, E2E38(가짜 음성·차단된 자동 재생·파일 fallback·파일 재생 포함), typecheck/build/format. 브라우저 pane에서 s1-first.mp3 로드·재생 상태 확인. 실폰 청취는 NOT_RUN |
 | Firebase Hosting 배포 (2026-11-08) | PASS | https://axial-sunup-488315-k1.web.app, 프로젝트 axial-sunup-488315-k1. `/`·`/demo`·`/mock/hospital` 200, 음원 audio/mpeg, 보안 헤더·캐시 확인. 브라우저 pane(음소거)에서 /demo 안내·음원 재생 상태, 390×844·360×640 레이아웃 확인. 실폰 NOT_RUN |
 | 음성 보완·계약 검사기 (2026-11-08) | PASS | 자동 읽기 켜기/끄기(도움·사용법 시트, 기기에 저장), 촬영 화면·식별 오류 음성, 직원 화면 「読み上げる」(누를 때만). Cloud TTS 25개로 재생성. `npm run api:check`를 계약 준수/위반/CORS 없음 대역 서버 3종에 돌려 PASS/FAIL 구분 확인. 360×640 도움 시트·직원 화면 렌더 확인(음소거) |
-| 실제 API | NOT_RUN | 서버 주소·계약 합의 대기. API 대역 성공은 서버 성공이 아님 |
+| 실제 API 연결 (2026-11-08 21:45 JST) | PASS | 배포된 `/` → Cloud Run `tonari-api` → gemini-3.5-flash. 음소거 헤드리스 Chrome + 합성 카메라(모의 접수기 스크린샷 영상)로 세션→식별→flow→내과→개인정보 멈춤→종료 완주(식별 3.3초). 개인정보 입력 화면은 직원 화면, 빈 화면은 재촬영 안내. `api:check` 11/11. 실제 폰 카메라 사진의 식별 정확도는 NOT_RUN |
+| 안정성 보강 (2026-11-09) | PASS, 운영 적용 | specs/002 참조. 합성 56장 3회: 등록 95/96, 안내 금지 72/72, 502 2/168건. 실제 폰 사진 아님 |
+| 사용성 보강 (2026-11-09) | PASS, 배포됨 | specs/003 참조. 375×553, 360×560, 393×659에서 촬영 버튼 표시. E2E 48개 |
 | 실제 카메라/소리/화면읽기 | NOT_RUN | iPhone/Android 실기·VoiceOver/TalkBack·실제 일본어 소리 확인 필요 |
 | 고령자 사용성 | NOT_RUN | 효과 검증을 주장하지 않음 |
 
@@ -42,10 +44,10 @@
 
 ## 남은 경계
 
-1. API 계약 합의 및 실제 서버 왕복/CORS/인증/사진 폐기 증거.
+1. 실제 서버 왕복·CORS·인증은 합성 화면으로 확인됨. 폰 촬영 사진의 식별 정확도와 서버 사진 폐기 증거는 남음.
 2. 자동 음성 안내와 Cloud TTS 음원(ja-JP-Chirp3-HD-Kore, 속도0.9, 13개)은 연결됨. 실폰에서 소리·자동 재생·VoiceOver와의 겹침 확인은 NOT_RUN. 화면읽기 사용자를 위한 자동 음성 끄기 설정은 없음.
 3. 실제 HTTPS iPhone/Android의 카메라·회전·음성·화면읽기·태블릿 촬영 동선 확인.
-4. 배포는 완료(Firebase Hosting). `/`는 API 주소(`VITE_API_BASE_URL`)가 없어 연결 준비 화면을 보인다. API가 생기면 빌드 시 주소를 넣고 다시 배포한다.
+4. 배포는 완료(Firebase Hosting). `firebase deploy`의 predeploy가 `npm run build:prod`로 API 주소를 넣어 빌드한다.
 
 ## 로컬 확인
 

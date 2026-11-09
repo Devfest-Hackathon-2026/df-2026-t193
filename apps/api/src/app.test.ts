@@ -3,7 +3,8 @@ import { identifySchema, validateIdentification } from '@tonari/shared';
 import { createApp } from './app';
 import { loadConfig } from './config';
 import { loadReviewedFlows } from './flows';
-import { candidatesOf, createFakeIdentifier, decide, type Identifier } from './identifier';
+import { candidatesOf, createFakeIdentifier, decide, withHedge, type Identifier } from './identifier';
+import { MACHINE_MARKERS } from './screen-hints';
 
 const ORIGIN = 'http://127.0.0.1:5173';
 const JPEG = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3, 4]);
@@ -233,5 +234,88 @@ describe('screen hints', () => {
     const { SCREEN_HINTS } = await import('./screen-hints');
     const { flows } = setup();
     for (const c of candidatesOf(flows)) expect(SCREEN_HINTS[c.key], c.key).toBeTruthy();
+  });
+});
+
+describe('machine markers', () => {
+  it('every reviewed machine has a marker the photo must show', () => {
+    for (const { flow } of candidatesOf(loadReviewedFlows(loadConfig({}).flowsDir)))
+      expect(MACHINE_MARKERS[flow.machine_id], flow.machine_id).toBeTruthy();
+  });
+});
+
+describe('withHedge', () => {
+  const never = (signal: AbortSignal) =>
+    new Promise<string>((_, reject) => {
+      signal.addEventListener('abort', () => reject(signal.reason));
+    });
+  const httpError = (status: number) => Object.assign(new Error('api'), { status });
+  const open = () => new AbortController().signal;
+
+  it('sends a second request when the first is slow, and the winner cancels the loser', async () => {
+    const signals: AbortSignal[] = [];
+    const result = await withHedge(
+      open(),
+      (signal) => {
+        signals.push(signal);
+        return signals.length === 1 ? never(signal) : Promise.resolve('ok');
+      },
+      10,
+    );
+    expect([result, signals.length, signals[0]!.aborted]).toEqual(['ok', 2, true]);
+  });
+  it('does not send a second request when the first answers in time', async () => {
+    let calls = 0;
+    const result = await withHedge(
+      open(),
+      () => {
+        calls++;
+        return Promise.resolve('ok');
+      },
+      10,
+    );
+    await new Promise((done) => setTimeout(done, 30));
+    expect([result, calls]).toEqual(['ok', 1]);
+  });
+  it('sends the second request at once after a server error', async () => {
+    let calls = 0;
+    const result = await withHedge(
+      open(),
+      () => (++calls === 1 ? Promise.reject(httpError(503)) : Promise.resolve('ok')),
+      100_000,
+    );
+    expect([result, calls]).toEqual(['ok', 2]);
+  });
+  it('gives up after both requests fail', async () => {
+    let calls = 0;
+    await expect(
+      withHedge(open(), () => {
+        calls++;
+        return Promise.reject(httpError(500));
+      }),
+    ).rejects.toThrow('api');
+    expect(calls).toBe(2);
+  });
+  it('does not send a second request after a request error', async () => {
+    let calls = 0;
+    await expect(
+      withHedge(open(), () => {
+        calls++;
+        return Promise.reject(httpError(400));
+      }),
+    ).rejects.toThrow('api');
+    expect(calls).toBe(1);
+  });
+  it('stops when the caller cancels', async () => {
+    const controller = new AbortController();
+    let calls = 0;
+    const pending = withHedge(controller.signal, (signal) => {
+      calls++;
+      return never(signal);
+    });
+    controller.abort();
+    await expect(pending).rejects.toBeDefined();
+    await new Promise((done) => setTimeout(done, 20));
+    expect(calls).toBe(1);
   });
 });

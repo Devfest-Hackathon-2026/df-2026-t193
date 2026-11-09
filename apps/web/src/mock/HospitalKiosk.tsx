@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { ja } from '../copy/ja';
 import { demoFlow } from '../api/demo';
 import { asset } from '../content/hospital-scenes';
+// Crop of the 400×450 scene, with some bezel around the kiosk screen.
+const VIEW = { x: 46, y: 45, w: 304, h: 276 };
 const box = (x: number, y: number, w: number, h: number) => ({
-  left: `${((x - 56) / 284) * 100}%`,
-  top: `${((y - 55) / 256) * 100}%`,
-  width: `${(w / 284) * 100}%`,
-  height: `${(h / 256) * 100}%`,
+  left: `${((x - VIEW.x) / VIEW.w) * 100}%`,
+  top: `${((y - VIEW.y) / VIEW.h) * 100}%`,
+  width: `${(w / VIEW.w) * 100}%`,
+  height: `${(h / VIEW.h) * 100}%`,
 });
 export function HospitalKiosk() {
   const [screen, setScreen] = useState<'start' | 'department' | 'input' | 'confirmation' | 'finished'>(
@@ -26,7 +28,6 @@ export function HospitalKiosk() {
   return (
     <main className="mock-kiosk">
       <header>
-        <strong>{c.title}</strong>
         <span>{c.badge}</span>
       </header>
       <section className="kiosk-display" aria-label={c.title}>
@@ -38,7 +39,11 @@ export function HospitalKiosk() {
           </div>
         ) : (
           <>
-            <svg className="kiosk-image" viewBox="56 55 284 256" aria-hidden="true">
+            <svg
+              className="kiosk-image"
+              viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}`}
+              aria-hidden="true"
+            >
               <image href={asset(name)} width="400" height="450" />
             </svg>
             <h1 className="sr">

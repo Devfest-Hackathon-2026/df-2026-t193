@@ -1,4 +1,4 @@
-import { test, expect } from './fake-speech';
+import { test, expect, spoken } from './fake-speech';
 import type { Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 const sample = JSON.parse(
@@ -209,4 +209,35 @@ test('camera disconnection disables capture and offers recovery', async ({ page 
   );
   await expect(primary(page)).toBeDisabled();
   await expect(page.getByRole('alert')).toContainText('カメラが見つかりません');
+});
+for (const [width, height] of [
+  [375, 553],
+  [360, 560],
+  [393, 659],
+] as const)
+  test(`live capture keeps take and help on screen at ${width}x${height}`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await fakeCamera(page);
+    await page.goto('/');
+    await primary(page).click();
+    await expect(primary(page)).toBeEnabled();
+    const bottoms = await page.evaluate(() => ({
+      take: document.querySelector('button.done')!.getBoundingClientRect().bottom,
+      help: document.querySelector('button.help')!.getBoundingClientRect().bottom,
+      height: innerHeight,
+    }));
+    expect(bottoms.take).toBeLessThanOrEqual(bottoms.height);
+    expect(bottoms.help).toBeLessThanOrEqual(bottoms.height);
+  });
+test('camera permission wait says what to press, then moves to framing', async ({ page }) => {
+  await fakeCamera(page, 'late');
+  await page.goto('/');
+  await primary(page).click();
+  await expect(page.getByRole('status')).toContainText('「許可」を押してください');
+  await expect.poll(() => spoken(page)).toEqual(['カメラの確認が出たら、「許可」を押してください。']);
+  await page.evaluate(() => (window as unknown as { allow: () => void }).allow());
+  await expect(primary(page)).toBeEnabled();
+  await expect
+    .poll(async () => (await spoken(page)).at(-1))
+    .toBe('受付機の画面全体が枠に入ったら、「撮る」を押してください。');
 });
