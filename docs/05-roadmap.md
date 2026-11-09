@@ -1,11 +1,20 @@
 # 남은 작업
 
-현재 상세 상태는 `frontend-status.md`, 구현 항목은 `../specs/001-frontend-foundation/tasks.md`가 기준이다.
+현재 상세 상태는 `frontend-status.md`가 기준이다. 코드 프리즈와 제출 마감은 **2026-11-10 19:00 JST**이다.
 
-1. 실제 서버 연결 완료. 합성 화면 기준 `api:check` 11/11. 폰으로 태블릿을 찍은 실제 사진의 식별 정확도 측정이 남음(`npm run eval:identify -w @tonari/api -- <사진 폴더>`).
-2. 안내 음원은 Cloud TTS로 생성·연결됨(`npm run voice:generate`). 문구를 바꾸면 다시 생성한다. 실폰 청취 확인은 남음.
-3. HTTPS 환경에서 실제 iPhone Safari/Android Chrome의 후면 카메라·거부 복구·소리·앱 전환·화면읽기 확인.
-4. 모의 접수기를 태블릿에 띄우고 폰으로 찍는 실제 동선 검증. AI 식별 정확도는 별도 평가.
-5. Firebase Hosting 배포와 Cloud Run API 연결 완료: https://axial-sunup-488315-k1.web.app (실제 폰 촬영 정확도는 미검증).
+## 제출 전
 
-조작음 자동 진행, Live 음성 대화, 맥도날드, PWA/Wake Lock은 후속 범위다. 고령자 사용성 효과는 아직 검증하지 않았다.
+1. 폰으로 태블릿을 찍은 실제 사진의 식별 정확도 측정 (`npm run eval:identify -w @tonari/api -- <사진 폴더>`)
+2. iPhone Safari와 Android Chrome에서 카메라, 자동 음성, 화면 꺼짐 방지, QR 스캔 확인
+3. 고령자 사용성 테스트. 효과는 아직 검증하지 않았다
+
+## 제출 후 금지
+
+마감부터 2026-11-14 종료까지 실행 환경을 동결한다. 재배포, 버그 수정, 프롬프트와 모델 변경, 기능에 관련된 설정 변경, 재시작 같은 수동 복구는 금지다. 크레딧 보충은 허용된다.
+
+## 알려진 제약
+
+- Gemini 멈춤으로 502가 약 1% 남아 있다 (합성 이미지 측정)
+- 등록된 모의 접수기에서만 동작한다
+
+조작음 자동 진행, Live 음성 대화, 맥도날드, 절차 학습 자동화는 후속 범위다.
