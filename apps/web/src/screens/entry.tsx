@@ -174,7 +174,7 @@ export function IdentifyingScreen({ demo, onCancel }: { demo: boolean; onCancel:
       <section className="guide-panel">
         <Heading>{ja.checking}</Heading>
         <div className="loading-bar" role="status" aria-label={ja.checking} />
-        <Help onClick={onCancel} label={ja.cancel} />
+        <Help onClick={onCancel} label={ja.cancel} icon="back" />
       </section>
     </main>
   );
@@ -210,7 +210,7 @@ export function StaffScreen({
           label={ja.staffVoice}
         />
         <Primary onClick={onRestart}>{ja.restart}</Primary>
-        {canReturn && <Help onClick={onBack} label={ja.return} />}
+        {canReturn && <Help onClick={onBack} label={ja.return} icon="back" />}
       </section>
     </main>
   );

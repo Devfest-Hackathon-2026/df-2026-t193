@@ -14,6 +14,8 @@ export const ja = {
   checking: '画面を確認しています',
   cancel: 'やめて戻る',
   pressed: '押しました',
+  step: (n: number, total: number) => `ステップ ${n} / ${total}`,
+  stepLabel: (n: number, total: number) => `${total}つのうち${n}つめ`,
   again: 'もう一度聞く',
   voiceStop: '読み上げを止める',
   optionsVoice: '選択肢を聞く',
