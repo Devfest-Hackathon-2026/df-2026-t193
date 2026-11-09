@@ -111,12 +111,7 @@ export function HospitalKiosk() {
               >
                 {c.clear}
               </button>
-              <button
-                className="kiosk-hit"
-                style={box(232, 244, 108, 60)}
-                disabled={digits === 0}
-                onClick={() => go('confirmation')}
-              >
+              <button className="kiosk-hit" style={box(232, 244, 108, 60)} onClick={() => go('confirmation')}>
                 {c.next}
               </button>
             </>

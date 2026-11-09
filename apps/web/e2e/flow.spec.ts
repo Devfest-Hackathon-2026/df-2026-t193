@@ -152,7 +152,6 @@ test('mock kiosk completes by its own buttons', async ({ page }) => {
   await expect(page.locator('h1')).toHaveText('診察券番号を入力してください');
   await expect(page.locator('input')).toHaveCount(0);
   const next = page.getByRole('button', { name: '次へ', exact: true });
-  await expect(next).toBeDisabled();
   await page.getByRole('button', { name: '1', exact: true }).click();
   await page.getByRole('button', { name: '2', exact: true }).click();
   // Only the count is shown, never the digits.

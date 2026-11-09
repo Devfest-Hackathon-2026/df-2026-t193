@@ -40,6 +40,6 @@ dialog:has(.safety-icon){border-top:10px solid var(--red)}dialog:has(.safety-ico
 .mock-kiosk .kiosk-display{width:min(100%,calc((100svh - 230px)*304/276));margin-inline:auto}
 @media(max-height:600px){.view-guide:not([data-phase=department]) .world{min-height:calc(clamp(0px,76vw,364.8px) - 34px)}.view-guide:not([data-phase=department]) .world>img{object-position:center 40%}.view-choice .world{min-height:24px}.aids .voice,.aids .help{min-height:48px}}
 .demo{font-size:1rem}
-.mock-kiosk .kiosk-key{background:#e3ecf5;color:#23424c;font-size:5.26cqw;border-radius:2cqw}.mock-kiosk .kiosk-clear{background:#e9eef0;color:#56717a;font-size:3.95cqw}.mock-kiosk .kiosk-hit:disabled{opacity:.5}.kiosk-field{position:absolute;display:flex;align-items:center;padding-left:2.6cqw;color:#23424c;font-size:4.6cqw;letter-spacing:.3em;box-sizing:border-box}
+.mock-kiosk .kiosk-key{background:#e3ecf5;color:#23424c;font-size:5.26cqw;border-radius:2cqw}.mock-kiosk .kiosk-clear{background:#e9eef0;color:#56717a;font-size:3.95cqw}.kiosk-field{position:absolute;display:flex;align-items:center;padding-left:2.6cqw;color:#23424c;font-size:4.6cqw;letter-spacing:.3em;box-sizing:border-box}
 .subcopy .word{display:inline-block}
 @media(max-height:720px){.view-guide .subcopy{font-size:1rem;line-height:1.5;margin-top:6px}}
