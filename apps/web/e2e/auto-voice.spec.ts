@@ -154,3 +154,16 @@ test('staff screen speaks the request only when tapped', async ({ page }) => {
     .poll(async () => (await spoken(page)).at(-1))
     .toBe('操作が分かりません。手伝っていただけますか。');
 });
+test('help on the capture screen stops speech and closing it does not replay', async ({ page }) => {
+  await fakeSpeech(page, 'ok', 5000);
+  const speaking = () => page.evaluate(() => (window as unknown as { speaking: boolean }).speaking);
+  await page.goto('/demo');
+  await primary(page).click();
+  await expect.poll(speaking).toBe(true);
+  await page.getByRole('button', { name: '困ったとき' }).click();
+  await expect.poll(speaking).toBe(false);
+  await page.getByRole('button', { name: '案内に戻る', exact: true }).click();
+  await page.waitForTimeout(500);
+  expect(await speaking()).toBe(false);
+  expect(await spoken(page)).toHaveLength(1);
+});

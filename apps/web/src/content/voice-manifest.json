@@ -21,6 +21,7 @@
   "common": {
     "受付機の画面全体が枠に入ったら、「撮る」を押してください。": "/assets/tonari/voice/common/capture.mp3",
     "見本の画面で進みます。「撮る」を押してください。": "/assets/tonari/voice/common/demo-capture.mp3",
+    "カメラの確認が出たら、「許可」を押してください。": "/assets/tonari/voice/common/camera-allow.mp3",
     "操作が分かりません。手伝っていただけますか。": "/assets/tonari/voice/common/staff.mp3",
     "画面を確認できませんでした。もう一度撮ってください。": "/assets/tonari/voice/common/error-unknown.mp3",
     "通信できません。接続を確認して、もう一度撮ってください。": "/assets/tonari/voice/common/error-offline.mp3",
@@ -30,6 +31,11 @@
     "しばらく待ってから、もう一度お試しください。": "/assets/tonari/voice/common/error-limited.mp3",
     "ただいま接続できません。もう一度撮るか、スタッフにご相談ください。": "/assets/tonari/voice/common/error-server.mp3",
     "この画面の案内を確認できません。スタッフにご相談ください。": "/assets/tonari/voice/common/error-protocol.mp3",
-    "接続の準備中です。見本で使い方を確認できます。": "/assets/tonari/voice/common/error-unconfigured.mp3"
+    "接続の準備中です。見本で使い方を確認できます。": "/assets/tonari/voice/common/error-unconfigured.mp3",
+    "カメラを使えません。もう一度試すか、スタッフにご相談ください。": "/assets/tonari/voice/common/camera-denied.mp3",
+    "カメラが見つかりません。": "/assets/tonari/voice/common/camera-missing.mp3",
+    "カメラを使用中です。他のアプリを閉じてお試しください。": "/assets/tonari/voice/common/camera-busy.mp3",
+    "カメラを使うには安全な接続で開いてください。": "/assets/tonari/voice/common/camera-insecure.mp3",
+    "撮影できませんでした。もう一度お試しください。": "/assets/tonari/voice/common/camera-failed.mp3"
   }
 }

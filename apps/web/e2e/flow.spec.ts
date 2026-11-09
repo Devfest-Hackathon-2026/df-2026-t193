@@ -20,7 +20,7 @@ for (const department of ['内科', '外科', '整形外科'])
     await primary(page).click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await page.getByRole('button', { name: '案内に戻る', exact: true }).click();
-    await expect(primary(page)).toHaveText('入力前のご案内');
+    await expect(primary(page)).toHaveText('入力の案内を見る');
     await primary(page).click();
     await page.getByRole('button', { name: '入力しました', exact: true }).click();
     await expect(page.locator('h1')).toHaveText('確定を押してください');
@@ -190,4 +190,20 @@ test('back cancels capture and reopening help does not change the step', async (
   await page.getByRole('button', { name: '違う画面が出ています' }).click();
   await page.goBack();
   await expect(page.locator('h1')).toHaveText('受付を押してください');
+});
+test('staff screen returns to the guidance by default and keeps restart secondary', async ({ page }) => {
+  await begin(page);
+  await page.getByRole('button', { name: '困ったとき' }).click();
+  await page.getByRole('button', { name: 'スタッフに聞きたい' }).click();
+  await expect(primary(page)).toHaveText('案内に戻る');
+  await expect(page.getByRole('button', { name: 'はじめに戻る', exact: true })).toBeVisible();
+  await primary(page).click();
+  await expect(page.locator('h1')).toHaveText('受付を押してください');
+});
+test('how-to sheet closes with a close button', async ({ page }) => {
+  await page.goto('/demo');
+  await page.getByRole('button', { name: '使い方を見る' }).click();
+  await page.getByRole('button', { name: '閉じる', exact: true }).click();
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  await expect(primary(page)).toHaveText('はじめる');
 });

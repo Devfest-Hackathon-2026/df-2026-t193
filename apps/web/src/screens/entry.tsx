@@ -36,6 +36,12 @@ export function StartScreen({
     </main>
   );
 }
+/** Remounts per phase so each new instruction is spoken once; a sheet only stops it. */
+function CaptureVoice({ text, overlay }: { text: string; overlay: AppState['overlay'] }) {
+  const autoVoice = useAutoVoice();
+  useGuidanceAudio(`capture:${overlay}`, text, voiceFile(null, text), autoVoice);
+  return null;
+}
 export function CaptureScreen({
   demo,
   state,
@@ -54,9 +60,29 @@ export function CaptureScreen({
       state.stepId === 's5' ? 'confirmation' : state.stepId && state.stepId !== 's1' ? 'department' : 'start',
     );
   const [wait, setWait] = useState(Date.now() < state.retryAt);
-  const autoVoice = useAutoVoice();
-  const spoken = state.error ? ja.errors[state.error] : demo ? ja.speech.demoCapture : ja.speech.capture;
-  const audio = useGuidanceAudio(`capture:${state.revision}`, spoken, voiceFile(null, spoken), autoVoice);
+  const captureError = !demo ? camera.error : null;
+  const phase = captureError
+    ? `camera-${captureError}`
+    : state.error
+      ? 'error'
+      : demo
+        ? 'demo'
+        : camera.status === 'waiting'
+          ? 'allow'
+          : camera.status === 'paused'
+            ? 'paused'
+            : 'ready';
+  const spoken = captureError
+    ? ja.cameraErrors[captureError]
+    : state.error
+      ? ja.errors[state.error]
+      : phase === 'demo'
+        ? ja.speech.demoCapture
+        : phase === 'allow'
+          ? ja.speech.cameraAllow
+          : phase === 'ready'
+            ? ja.speech.capture
+            : '';
   useEffect(() => {
     const timer = setTimeout(
       () => setWait(false),
@@ -74,7 +100,6 @@ export function CaptureScreen({
           : 'terminal-neutral';
   async function take() {
     primeGuidanceAudio();
-    audio.stop();
     if (demo) {
       onPhoto(null, screen);
       return;
@@ -84,6 +109,7 @@ export function CaptureScreen({
   }
   return (
     <main className="app view-capture">
+      <CaptureVoice key={phase} text={spoken} overlay={state.overlay} />
       <Header demo={demo} camera back={onCancel} />
       {demo ? (
         <KioskScene name={scene}>
@@ -115,7 +141,7 @@ export function CaptureScreen({
           <Word>映して</Word>
           <Word>ください</Word>
         </Heading>
-        <p className="subcopy">{demo ? ja.demoCapture : ja.captureCopy}</p>
+        {demo && <p className="subcopy">{ja.demoCapture}</p>}
         {state.error && (
           <p className="feedback" role="alert">
             {ja.errors[state.error]}
@@ -209,8 +235,8 @@ export function StaffScreen({
           onClick={() => void audio.play()}
           label={ja.staffVoice}
         />
-        <Primary onClick={onRestart}>{ja.restart}</Primary>
-        {canReturn && <Help onClick={onBack} label={ja.return} />}
+        <Primary onClick={canReturn ? onBack : onRestart}>{canReturn ? ja.return : ja.restart}</Primary>
+        {canReturn && <Help onClick={onRestart} label={ja.restart} />}
       </section>
     </main>
   );

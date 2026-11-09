@@ -177,7 +177,7 @@ function GuideApp() {
           </ol>
           <AutoVoiceToggle />
           <button className="close" onClick={close}>
-            {ja.restart}
+            {ja.close}
           </button>
         </Sheet>
       )}

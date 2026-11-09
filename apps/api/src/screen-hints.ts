@@ -10,3 +10,8 @@ export const SCREEN_HINTS: Record<string, string> = {
     '見出し「内容をご確認ください」、「右下の『確定』を押します」、右下に緑の大きな「確定」ボタン。入力を求める文言はない',
   'hospital-recheck:finished': '緑のチェックマーク、「ありがとうございました」。ボタンは「最初に戻る」だけ',
 };
+
+// 등록 기기임을 사진에서 확인하는 표시. 이 표시가 읽혀야만 등록 화면으로 판정한다.
+export const MACHINE_MARKERS: Record<string, string> = {
+  'mock-hospital-v1': 'デモ用の模擬端末',
+};
