@@ -193,6 +193,11 @@ export function CaptureScreen({
   );
 }
 export function IdentifyingScreen({ demo, onCancel }: { demo: boolean; onCancel: () => void }) {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setSlow(true), 6000);
+    return () => clearTimeout(timer);
+  }, []);
   return (
     <main className="app view-start">
       <Header demo={demo} />
@@ -200,6 +205,11 @@ export function IdentifyingScreen({ demo, onCancel }: { demo: boolean; onCancel:
       <section className="guide-panel">
         <Heading>{ja.checking}</Heading>
         <div className="loading-bar" role="status" aria-label={ja.checking} />
+        {slow && (
+          <p className="feedback" role="status">
+            {ja.checkingSlow}
+          </p>
+        )}
         <Help onClick={onCancel} label={ja.cancel} icon="back" />
       </section>
     </main>
@@ -208,31 +218,40 @@ export function IdentifyingScreen({ demo, onCancel }: { demo: boolean; onCancel:
 export function StaffScreen({
   demo,
   canReturn,
+  reason,
   onBack,
   onRestart,
 }: {
   demo: boolean;
   canReturn: boolean;
+  reason: AppState['rejected'];
   onBack: () => void;
   onRestart: () => void;
 }) {
+  const autoVoice = useAutoVoice();
+  const reasonText = reason ? ja.rejected[reason] : '';
+  const reasonAudio = useGuidanceAudio('reason', reasonText, voiceFile(null, reasonText), autoVoice);
   // Not automatic: the user decides when the phone speaks to staff.
   const audio = useGuidanceAudio('staff', ja.staffMessage, voiceFile(null, ja.staffMessage));
   return (
-    <main className="app view-start">
+    <main className="app view-start view-staff">
       <Header demo={demo} />
-      <KioskScene name="terminal-neutral" />
+      {reason ? <div className="world" /> : <KioskScene name="terminal-neutral" />}
       <section className="guide-panel">
         <Heading>
           {ja.staffTitleWords.map((w) => (
             <Word key={w}>{w}</Word>
           ))}
         </Heading>
-        <p className="subcopy">{ja.staffMessage}</p>
+        {reason && <p className="subcopy">{reasonText}</p>}
+        <p className="staff-message">{ja.staffMessage}</p>
         <Voice
           playing={audio.playing}
           failed={audio.failed}
-          onClick={() => void audio.play()}
+          onClick={() => {
+            reasonAudio.stop();
+            void audio.play();
+          }}
           label={ja.staffVoice}
         />
         <Primary onClick={canReturn ? onBack : onRestart}>{canReturn ? ja.return : ja.restart}</Primary>

@@ -19,10 +19,10 @@ export function GuidanceScreen({
   dispatch: Dispatch<Action>;
 }) {
   const step = currentStep(state)!;
-  const id = step.type === 'stop' ? (state.previousStep ?? 's1') : state.stepId!;
-  const visual = state.flow!.steps[id];
+  const id = state.stepId!;
   const isChoice = step.type === 'choice',
-    isEnd = step.type === 'end';
+    isEnd = step.type === 'end',
+    isStop = step.type === 'stop';
   const autoVoice = useAutoVoice();
   const text = guidanceSpeech(step, { first: state.previousStep === null });
   const audio = useGuidanceAudio(
@@ -41,8 +41,8 @@ export function GuidanceScreen({
     dispatch({ type: isChoice ? 'CONFIRM' : 'PRESS', revision: state.revision });
   };
   const selected = step.type === 'choice' ? step.options.find((o) => o.id === state.selected) : null;
-  const label = visual?.type === 'guide' ? visual.target.label : '';
-  const keyColor = visual?.type === 'guide' ? visual.target.color : undefined;
+  const label = step.type === 'guide' ? step.target.label : '';
+  const keyColor = step.type === 'guide' ? step.target.color : undefined;
   const progress = { current: step.stage + 1, total: state.flow!.stages.length };
   return (
     <>
@@ -52,9 +52,9 @@ export function GuidanceScreen({
       >
         <Header demo={demo} progress={progress} />
         <KioskScene
-          stepId={isEnd ? state.stepId! : id}
+          stepId={id}
           label={label}
-          onZoom={!isChoice && !isEnd ? () => open('zoom') : undefined}
+          onZoom={!isChoice && !isEnd && !isStop ? () => open('zoom') : undefined}
         />
         <section className="guide-panel" aria-labelledby="instruction">
           <Heading>
@@ -64,6 +64,13 @@ export function GuidanceScreen({
                   <strong>どの科</strong>
                 </Word>
                 <Word>ですか？</Word>
+              </>
+            ) : isStop ? (
+              <>
+                <Word>{ja.safeTitleParts[0]}</Word>
+                <Word>
+                  <strong>{ja.safeTitleParts[1]}</strong>
+                </Word>
               </>
             ) : isEnd ? (
               <>

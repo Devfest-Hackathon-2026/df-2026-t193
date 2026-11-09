@@ -8,10 +8,11 @@ import { ja } from './copy/ja';
 import { demoFlow, demoIdentify } from './api/demo';
 import { createHttpGateway } from './api/http';
 import { GatewayError } from './api/gateway';
-import { assertSupportedScenes } from './content/hospital-scenes';
+import { asset, assertSupportedScenes, scenes } from './content/hospital-scenes';
 import { HospitalKiosk } from './mock/HospitalKiosk';
 import { primeGuidanceAudio } from './audio/unlock';
 import { setAutoVoice, useAutoVoice } from './audio/preference';
+import { useScreenWake } from './hooks/useScreenWake';
 const gateway = createHttpGateway(import.meta.env.VITE_API_BASE_URL ?? '');
 export function App() {
   return location.pathname === '/mock/hospital' ? <HospitalKiosk /> : <GuideApp />;
@@ -22,6 +23,12 @@ function GuideApp() {
   const pending = useRef<{ image: Blob | null; screen: string } | null>(null);
   const latest = useRef(state);
   latest.current = state;
+  useScreenWake(state.screen !== 'start' && currentStep(state)?.type !== 'end');
+  useEffect(() => {
+    if (!state.flow) return;
+    // Every step's picture is ready before the user reaches it.
+    for (const { name } of Object.values(scenes)) new Image().src = asset(name);
+  }, [state.flow]);
   useEffect(() => {
     if (state.screen !== 'identifying') return;
     const input = pending.current;
@@ -51,7 +58,8 @@ function GuideApp() {
             const flow = validateIdentification(result, data);
             assertSupportedScenes(flow);
             if (!controller.signal.aborted) dispatch({ type: 'RESULT', requestId, result, flow });
-          } else dispatch({ type: result.status === 'unknown' ? 'UNKNOWN' : 'REJECTED', requestId });
+          } else if (result.status === 'unknown') dispatch({ type: 'UNKNOWN', requestId });
+          else dispatch({ type: 'REJECTED', requestId, reason: result.status });
         }
       } catch (error) {
         if (!controller.signal.aborted)
@@ -102,6 +110,11 @@ function GuideApp() {
       }
       if (s.overlay) dispatch({ type: 'CLOSE' });
       else if (s.screen === 'capture' || s.screen === 'identifying') dispatch({ type: 'CANCEL' });
+      else if (s.screen === 'active' && currentStep(s)?.type !== 'end') {
+        // Back undoes one mistaken tap instead of discarding the whole guidance.
+        if (s.trail.length > 0) dispatch({ type: 'BACK', revision: s.revision });
+        else dispatch({ type: 'RETAKE' });
+      } else if (s.screen === 'staff' && s.flow && s.stepId) dispatch({ type: 'RETURN' });
       else dispatch({ type: 'RESTART' });
       history.pushState({ tonari: true }, '', location.href);
     };
@@ -145,12 +158,18 @@ function GuideApp() {
         <StaffScreen
           demo={demo}
           canReturn={Boolean(state.flow && state.stepId)}
+          reason={state.rejected}
           onBack={() => dispatch({ type: 'RETURN' })}
           onRestart={() => dispatch({ type: 'RESTART' })}
         />
       )}
       {state.overlay === 'help' && (
         <Sheet title={ja.helpTitle} onClose={close}>
+          {state.screen === 'active' && state.trail.length > 0 && (
+            <button className="option" onClick={() => dispatch({ type: 'BACK', revision: state.revision })}>
+              {ja.previous}
+            </button>
+          )}
           {state.screen === 'active' && currentStep(state)?.type !== 'stop' && (
             <button className="option" onClick={() => dispatch({ type: 'RETAKE' })}>
               {ja.wrong}
@@ -159,7 +178,7 @@ function GuideApp() {
           <button className="option" onClick={() => dispatch({ type: 'STAFF' })}>
             {ja.staffAction}
           </button>
-          <AutoVoiceToggle />
+          <AutoVoiceToggle className="option auto-voice-help" />
           <button className="close" onClick={close}>
             {ja.return}
           </button>
@@ -184,10 +203,10 @@ function GuideApp() {
     </>
   );
 }
-function AutoVoiceToggle() {
+function AutoVoiceToggle({ className = 'option' }: { className?: string }) {
   const on = useAutoVoice();
   return (
-    <button className="option" onClick={() => setAutoVoice(!on)}>
+    <button className={className} onClick={() => setAutoVoice(!on)}>
       {on ? ja.autoVoiceOff : ja.autoVoiceOn}
     </button>
   );

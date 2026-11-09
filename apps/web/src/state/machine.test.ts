@@ -138,3 +138,46 @@ it('rejects a server flow that skips the reviewed safety stop', () => {
   if (step?.type === 'guide') step.next = 's5';
   expect(reducer(s, { type: 'RESULT', requestId: s.requestId, result, flow }).error).toBe('protocol');
 });
+describe('going back one step', () => {
+  const back = (s: AppState) => reducer(s, { type: 'BACK', revision: s.revision });
+  it('returns to the previous step with a new revision', () => {
+    const next = press(active('s1'));
+    expect(next.stepId).toBe('s2');
+    const returned = back(next);
+    expect(returned.stepId).toBe('s1');
+    expect(returned.revision).toBeGreaterThan(next.revision);
+    expect(returned.trail).toEqual([]);
+  });
+  it('does nothing at the first step', () => {
+    const start = active('s1');
+    expect(back(start)).toEqual(start);
+  });
+  it('ignores a stale revision', () => {
+    const next = press(active('s1'));
+    expect(reducer(next, { type: 'BACK', revision: next.revision - 1 })).toEqual(next);
+  });
+  it('shows the personal-information stop again and still needs confirmation', () => {
+    const atStop: AppState = { ...active('s4'), trail: ['s3-internal'], overlay: 'safety' };
+    const atConfirm = reducer(atStop, { type: 'RESUME', revision: atStop.revision });
+    expect(atConfirm.stepId).toBe('s5');
+    const returned = back(atConfirm);
+    expect(returned.stepId).toBe('s4');
+    expect(returned.overlay).toBe('safety');
+    expect(press({ ...returned, overlay: null }).stepId).toBe('s4');
+  });
+});
+describe('rejected photos', () => {
+  const identifying = () => photograph(reducer(initialState, { type: 'START' }));
+  it('keeps the reason for the staff screen', () => {
+    const s = identifying();
+    const staff = reducer(s, { type: 'REJECTED', requestId: s.requestId, reason: 'sensitive' });
+    expect([staff.screen, staff.rejected]).toEqual(['staff', 'sensitive']);
+  });
+  it('clears the reason when the user restarts or asks for staff directly', () => {
+    const s = identifying();
+    const staff = reducer(s, { type: 'REJECTED', requestId: s.requestId, reason: 'unsupported' });
+    expect(reducer(staff, { type: 'RESTART' }).rejected).toBeNull();
+    expect(reducer(staff, { type: 'STAFF' }).rejected).toBeNull();
+    expect(reducer(staff, { type: 'RETURN' }).rejected).toBeNull();
+  });
+});

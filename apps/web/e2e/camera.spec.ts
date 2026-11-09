@@ -241,3 +241,36 @@ test('camera permission wait says what to press, then moves to framing', async (
     .poll(async () => (await spoken(page)).at(-1))
     .toBe('受付機の画面全体が枠に入ったら、「撮る」を押してください。');
 });
+test('a slow identification tells the user to wait', async ({ page }) => {
+  await fakeCamera(page);
+  await page.route('**/api/session', (route) =>
+    route.fulfill({
+      json: { token: 't', expires_at: new Date(Date.now() + 600000).toISOString() },
+    }),
+  );
+  await page.route('**/api/identify', async (route) => {
+    await new Promise((done) => setTimeout(done, 8000));
+    await route.fulfill({ json: { status: 'unknown' } }).catch(() => {});
+  });
+  await page.goto('/');
+  await primary(page).click();
+  await expect(primary(page)).toBeEnabled();
+  await primary(page).click();
+  await expect(page.getByText('もう少しお待ちください。')).toBeVisible({ timeout: 7500 });
+});
+for (const [status, reason] of [
+  ['sensitive', 'この画面は個人情報があるため、案内できません。'],
+  ['unsupported', 'この機械には、まだ対応していません。'],
+] as const)
+  test(`${status} photo explains why it cannot be guided`, async ({ page }) => {
+    await fakeCamera(page);
+    await API(page, status);
+    await page.goto('/');
+    await primary(page).click();
+    await expect(primary(page)).toBeEnabled();
+    await primary(page).click();
+    await expect(page.locator('h1')).toHaveText('スタッフに見せてください');
+    await expect(page.getByText(reason)).toBeVisible();
+    await expect.poll(async () => (await spoken(page)).at(-1)).toBe(reason);
+    await expect(page.locator('.world img')).toHaveCount(0);
+  });

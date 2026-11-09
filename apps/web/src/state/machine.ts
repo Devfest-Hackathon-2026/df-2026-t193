@@ -7,11 +7,15 @@ export interface AppState {
   flow: Flow | null;
   stepId: string | null;
   previousStep: string | null;
+  /** Steps reached by the user's own taps, for going back one step. */
+  trail: string[];
   selected: string | null;
   revision: number;
   requestId: number;
   unknownCount: number;
   overlay: Overlay;
+  /** Why the service declined to guide this photo; shown on the staff screen. */
+  rejected: 'sensitive' | 'unsupported' | null;
   error: ErrorKind | 'unknown' | null;
   retryAt: number;
   returnTo: 'start' | 'active';
@@ -21,11 +25,13 @@ export const initialState: AppState = {
   flow: null,
   stepId: null,
   previousStep: null,
+  trail: [],
   selected: null,
   revision: 0,
   requestId: 0,
   unknownCount: 0,
   overlay: null,
+  rejected: null,
   error: null,
   retryAt: 0,
   returnTo: 'start',
@@ -36,10 +42,10 @@ export type Action =
   | { type: 'PHOTO'; revision: number }
   | { type: 'RESULT'; requestId: number; result: Identified; flow: Flow }
   | { type: 'UNKNOWN'; requestId: number }
-  | { type: 'REJECTED'; requestId: number }
+  | { type: 'REJECTED'; requestId: number; reason: 'sensitive' | 'unsupported' }
   | { type: 'ERROR'; requestId: number; error: ErrorKind; retryAt?: number }
   | { type: 'SELECT'; optionId: string; revision: number }
-  | { type: 'CONFIRM' | 'PRESS' | 'RESUME'; revision: number };
+  | { type: 'CONFIRM' | 'PRESS' | 'RESUME' | 'BACK'; revision: number };
 export function currentStep(state: AppState) {
   return state.flow && state.stepId ? (state.flow.steps[state.stepId] ?? null) : null;
 }
@@ -52,6 +58,7 @@ export function reducer(state: AppState, action: Action): AppState {
     ...state,
     stepId: next,
     previousStep: state.stepId,
+    trail: state.stepId ? [...state.trail, state.stepId] : state.trail,
     selected: null,
     revision: state.revision + 1,
     overlay: state.flow?.steps[next]?.type === 'stop' ? 'safety' : null,
@@ -89,6 +96,7 @@ export function reducer(state: AppState, action: Action): AppState {
         stepId: action.result.step_id,
         selected: null,
         previousStep: null,
+        trail: [],
         revision: state.revision + 1,
         unknownCount: 0,
         error: null,
@@ -99,12 +107,13 @@ export function reducer(state: AppState, action: Action): AppState {
       return {
         ...state,
         screen: state.unknownCount + 1 >= 2 ? 'staff' : 'capture',
+        rejected: null,
         unknownCount: state.unknownCount + 1,
         error: 'unknown',
         revision: state.revision + 1,
       };
     case 'REJECTED':
-      return { ...state, screen: 'staff', revision: state.revision + 1 };
+      return { ...state, screen: 'staff', rejected: action.reason, revision: state.revision + 1 };
     case 'ERROR':
       return {
         ...state,
@@ -150,6 +159,22 @@ export function reducer(state: AppState, action: Action): AppState {
       const next = nextStep(state.flow, state.stepId);
       return next ? move(next) : state;
     }
+    case 'BACK': {
+      const stepId = state.trail.at(-1);
+      if (state.screen !== 'active' || !state.flow || !stepId) return state;
+      const trail = state.trail.slice(0, -1);
+      return {
+        ...state,
+        stepId,
+        trail,
+        previousStep: trail.at(-1) ?? null,
+        selected: null,
+        revision: state.revision + 1,
+        // Returning onto a stop shows it again; passing it still needs the explicit confirmation.
+        overlay: state.flow.steps[stepId]?.type === 'stop' ? 'safety' : null,
+        error: null,
+      };
+    }
     case 'RETAKE':
       return state.screen === 'active' && step?.type !== 'stop' && step?.type !== 'end'
         ? {
@@ -176,6 +201,7 @@ export function reducer(state: AppState, action: Action): AppState {
       return {
         ...state,
         screen: 'staff',
+        rejected: null,
         overlay: null,
         revision: state.revision + 1,
         requestId: state.requestId + 1,
@@ -184,6 +210,7 @@ export function reducer(state: AppState, action: Action): AppState {
       return {
         ...state,
         screen: state.flow && state.stepId ? 'active' : 'start',
+        rejected: null,
         overlay: step?.type === 'stop' ? 'safety' : null,
         revision: state.revision + 1,
         error: null,

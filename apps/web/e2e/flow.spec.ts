@@ -128,7 +128,7 @@ for (const size of [
     await page.getByRole('button', { name: '入力しました' }).click();
     await primary(page).click();
     await check('done');
-    await page.addStyleTag({ content: 'html{font-size:32px}' });
+    await page.addStyleTag({ content: ':root{font-size:32px!important}' });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await primary(page).click();
     await primary(page).click();
@@ -157,7 +157,7 @@ test('mock kiosk completes by its own buttons', async ({ page }) => {
 test('all screens reflow at 200% and dialogs in landscape', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 640 });
   await page.goto('/demo');
-  await page.addStyleTag({ content: 'html{font-size:32px}' });
+  await page.addStyleTag({ content: ':root{font-size:32px!important}' });
   const noOverflow = async () =>
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await noOverflow();
@@ -197,6 +197,7 @@ test('staff screen returns to the guidance by default and keeps restart secondar
   await page.getByRole('button', { name: 'スタッフに聞きたい' }).click();
   await expect(primary(page)).toHaveText('案内に戻る');
   await expect(page.getByRole('button', { name: 'はじめに戻る', exact: true })).toBeVisible();
+  await expect(page.getByText('案内できません')).toHaveCount(0);
   await primary(page).click();
   await expect(page.locator('h1')).toHaveText('受付を押してください');
 });
@@ -207,3 +208,178 @@ test('how-to sheet closes with a close button', async ({ page }) => {
   await expect(page.getByRole('dialog')).not.toBeVisible();
   await expect(primary(page)).toHaveText('はじめる');
 });
+test('a mistaken press can go back one step, and the first step offers no back', async ({ page }) => {
+  await begin(page);
+  await page.getByRole('button', { name: '困ったとき' }).click();
+  await expect(page.getByRole('button', { name: '一つ前の案内に戻る' })).toHaveCount(0);
+  await page.getByRole('button', { name: '案内に戻る', exact: true }).click();
+  await primary(page).click();
+  await expect(page.locator('h1')).toHaveText('どの科ですか？');
+  await page.getByRole('button', { name: '困ったとき' }).click();
+  await page.getByRole('button', { name: '一つ前の案内に戻る' }).click();
+  await expect(page.locator('h1')).toHaveText('受付を押してください');
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+});
+test('the choice button says what is needed before a selection', async ({ page }) => {
+  await begin(page);
+  await primary(page).click();
+  await expect(primary(page)).toBeDisabled();
+  await expect(primary(page)).toHaveText('科を選んでください');
+});
+test('scene pictures are fetched before their steps', async ({ page }) => {
+  const seen: string[] = [];
+  page.on('request', (r) => seen.push(r.url()));
+  await begin(page);
+  await expect.poll(() => seen.some((u) => u.endsWith('/terminal-orthopedics.svg'))).toBe(true);
+  await expect.poll(() => seen.some((u) => u.endsWith('/terminal-confirm.svg'))).toBe(true);
+});
+for (const [width, height] of [
+  [375, 553],
+  [360, 560],
+] as const)
+  test(`guide and choice keep the reply and help on screen at ${width}x${height}`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await begin(page);
+    const fits = async () => {
+      const box = await page.evaluate(() => ({
+        done: document.querySelector('button.done')!.getBoundingClientRect().bottom,
+        help: document.querySelector('button.help')!.getBoundingClientRect().bottom,
+        height: innerHeight,
+      }));
+      expect(box.done).toBeLessThanOrEqual(box.height);
+      expect(box.help).toBeLessThanOrEqual(box.height);
+    };
+    await fits();
+    // The 「ここ」 marker (scene y 225-310 of 450) stays in the visible part of the picture.
+    const target = await page.evaluate(() => {
+      const world = document.querySelector('.world')!.getBoundingClientRect();
+      const panel = document.querySelector('.guide-panel')!.getBoundingClientRect();
+      const height = (world.width * 450) / 400;
+      const offset = (height - world.height) * 0.4;
+      const toScreen = (y: number) => world.top + (y / 450) * height - offset;
+      return { top: toScreen(225), bottom: toScreen(310), worldTop: world.top, panelTop: panel.top };
+    });
+    expect(target.top).toBeGreaterThanOrEqual(target.worldTop);
+    expect(target.bottom).toBeLessThanOrEqual(target.panelTop);
+    await primary(page).click();
+    await expect(page.locator('h1')).toHaveText('どの科ですか？');
+    await fits();
+  });
+test('the screen stays awake during guidance and is released at the end', async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { wake: { requested: number; released: number } };
+    w.wake = { requested: 0, released: 0 };
+    Object.defineProperty(navigator, 'wakeLock', {
+      configurable: true,
+      value: {
+        request: async () => {
+          w.wake.requested++;
+          return {
+            released: false,
+            release: async () => {
+              w.wake.released++;
+            },
+          };
+        },
+      },
+    });
+  });
+  const wake = () =>
+    page.evaluate(() => (window as unknown as { wake: { requested: number; released: number } }).wake);
+  await begin(page);
+  await expect.poll(async () => (await wake()).requested).toBeGreaterThan(0);
+  await primary(page).click();
+  await page.getByRole('radio', { name: '内科', exact: true }).check();
+  await primary(page).click();
+  await primary(page).click();
+  await page.getByRole('button', { name: '入力しました', exact: true }).click();
+  await primary(page).click();
+  await expect(page.locator('h1')).toHaveText('案内はここまでです');
+  await expect.poll(async () => (await wake()).released).toBeGreaterThan(0);
+});
+test('guidance works without wake lock support', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'wakeLock', {
+      configurable: true,
+      value: { request: () => Promise.reject(new DOMException('no', 'NotAllowedError')) },
+    });
+  });
+  await begin(page);
+  await primary(page).click();
+  await expect(page.locator('h1')).toHaveText('どの科ですか？');
+});
+test('help sheet fits a short screen with its close button visible', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 553 });
+  await begin(page);
+  await primary(page).click();
+  await expect(page.locator('h1')).toHaveText('どの科ですか？');
+  await page.getByRole('button', { name: '困ったとき' }).click();
+  await expect(page.getByRole('button', { name: '一つ前の案内に戻る' })).toBeVisible();
+  const close = await page.getByRole('button', { name: '案内に戻る', exact: true }).boundingBox();
+  expect(close!.y + close!.height).toBeLessThanOrEqual(553);
+});
+test('closing the personal-information stop never tells the user to press a button', async ({ page }) => {
+  await begin(page);
+  await primary(page).click();
+  await page.getByRole('radio', { name: '内科', exact: true }).check();
+  await primary(page).click();
+  await primary(page).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.getByRole('button', { name: '案内に戻る', exact: true }).click();
+  await expect(page.locator('h1')).toHaveText('ここからはご自分で');
+  await expect(page.locator('h1 .key')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /拡大/ })).toHaveCount(0);
+  await primary(page).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+});
+test('browser back undoes one step during guidance', async ({ page }) => {
+  await begin(page);
+  await primary(page).click();
+  await expect(page.locator('h1')).toHaveText('どの科ですか？');
+  await page.goBack();
+  await expect(page.locator('h1')).toHaveText('受付を押してください');
+});
+test('browser back on the first step returns to capture, and cancel restores it', async ({ page }) => {
+  await begin(page);
+  await page.goBack();
+  await expect(page.locator('h1')).toHaveText('画面を映してください');
+  await page.getByRole('button', { name: '前の画面に戻る' }).click();
+  await expect(page.locator('h1')).toHaveText('受付を押してください');
+});
+test('browser back on the staff screen returns to the guidance', async ({ page }) => {
+  await begin(page);
+  await page.getByRole('button', { name: '困ったとき' }).click();
+  await page.getByRole('button', { name: 'スタッフに聞きたい' }).click();
+  await expect(page.locator('h1')).toHaveText('スタッフに見せてください');
+  await page.goBack();
+  await expect(page.locator('h1')).toHaveText('受付を押してください');
+});
+test('browser back on the end screen restarts', async ({ page }) => {
+  await begin(page);
+  await primary(page).click();
+  await page.getByRole('radio', { name: '内科', exact: true }).check();
+  await primary(page).click();
+  await primary(page).click();
+  await page.getByRole('button', { name: '入力しました', exact: true }).click();
+  await primary(page).click();
+  await expect(page.locator('h1')).toHaveText('案内はここまでです');
+  await page.goBack();
+  await expect(primary(page)).toHaveText('はじめる');
+});
+for (const [width, height] of [
+  [1180, 820],
+  [1024, 768],
+  [1280, 800],
+  [820, 1180],
+] as const)
+  test(`mock kiosk fits a ${width}x${height} tablet`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await page.goto('/mock/hospital');
+    const box = await page.evaluate(() => ({
+      hit: [...document.querySelectorAll('.kiosk-hit')].at(-1)!.getBoundingClientRect().bottom,
+      reset: document.querySelector('.kiosk-back')!.getBoundingClientRect().bottom,
+      height: innerHeight,
+    }));
+    expect(box.hit).toBeLessThanOrEqual(box.height);
+    expect(box.reset).toBeLessThanOrEqual(box.height);
+  });
