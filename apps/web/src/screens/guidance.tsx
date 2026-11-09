@@ -3,7 +3,7 @@ import { Header, Heading, Word, Primary, Help, Voice, Sheet, Icon } from '../com
 import { KioskScene, SceneDetail } from '../components/KioskScene';
 import type { AppState, Action } from '../state/machine';
 import { currentStep } from '../state/machine';
-import type { Dispatch } from 'react';
+import type { CSSProperties, Dispatch } from 'react';
 import { useGuidanceAudio } from '../hooks/useGuidanceAudio';
 import { guidanceSpeech } from '../content/speech';
 import { voiceFile } from '../content/voice';
@@ -42,13 +42,15 @@ export function GuidanceScreen({
   };
   const selected = step.type === 'choice' ? step.options.find((o) => o.id === state.selected) : null;
   const label = visual?.type === 'guide' ? visual.target.label : '';
+  const keyColor = visual?.type === 'guide' ? visual.target.color : undefined;
+  const progress = { current: step.stage + 1, total: state.flow!.stages.length };
   return (
     <>
       <main
         className={`app view-${isChoice ? 'choice' : isEnd ? 'done' : 'guide'}`}
         data-phase={id.startsWith('s3-') ? 'department' : 'reception'}
       >
-        <Header demo={demo} />
+        <Header demo={demo} progress={progress} />
         <KioskScene
           stepId={isEnd ? state.stepId! : id}
           label={label}
@@ -75,7 +77,13 @@ export function GuidanceScreen({
               <>
                 <span className={label.length > 2 ? 'department-line' : undefined}>
                   <Word>
-                    <strong>{label}</strong>を
+                    <strong
+                      className="key"
+                      style={keyColor ? ({ '--key': keyColor } as CSSProperties) : undefined}
+                    >
+                      {label}
+                    </strong>
+                    を
                   </Word>
                 </span>
                 <span className={label.length > 2 ? 'department-line' : undefined}>
@@ -103,16 +111,7 @@ export function GuidanceScreen({
               ))}
             </fieldset>
           )}
-          {isEnd ? (
-            <p className="subcopy">{ja.thanks}</p>
-          ) : (
-            <Voice
-              playing={audio.playing}
-              failed={audio.failed}
-              onClick={() => void audio.play()}
-              choice={isChoice}
-            />
-          )}
+          {isEnd && <p className="subcopy">{ja.thanks}</p>}
           <Primary
             disabled={isChoice && !selected}
             onClick={isEnd ? () => dispatch({ type: 'RESTART' }) : press}
@@ -127,7 +126,17 @@ export function GuidanceScreen({
                   ? ja.safetyReview
                   : ja.pressed}
           </Primary>
-          {!isEnd && <Help onClick={() => open('help')} />}
+          {!isEnd && (
+            <div className="aids">
+              <Voice
+                playing={audio.playing}
+                failed={audio.failed}
+                onClick={() => void audio.play()}
+                choice={isChoice}
+              />
+              <Help onClick={() => open('help')} />
+            </div>
+          )}
         </section>
       </main>
       {state.overlay === 'zoom' && (

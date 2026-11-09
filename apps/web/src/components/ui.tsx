@@ -24,17 +24,31 @@ export function Icon({ name }: { name: 'back' | 'sound' | 'help' | 'zoom' | 'shi
     </svg>
   );
 }
+export function Progress({ current, total }: { current: number; total: number }) {
+  return (
+    <div className="progress">
+      <span className="progress-text">{ja.step(current, total)}</span>
+      <span className="progress-bars" role="img" aria-label={ja.stepLabel(current, total)}>
+        {Array.from({ length: total }, (_, i) => (
+          <i key={i} className={i < current ? 'on' : undefined} />
+        ))}
+      </span>
+    </div>
+  );
+}
 export function Header({
   demo,
   back,
   camera = false,
+  progress,
 }: {
   demo: boolean;
   back?: () => void;
   camera?: boolean;
+  progress?: { current: number; total: number };
 }) {
   return (
-    <header className="masthead">
+    <header className={progress ? 'masthead with-progress' : 'masthead'}>
       <div className={back ? 'identity-group' : undefined}>
         {back && (
           <button className="back" onClick={back} aria-label={ja.back}>
@@ -47,6 +61,7 @@ export function Header({
         </div>
       </div>
       <span className="demo">{demo ? ja.demo : camera ? ja.camera : ja.mock}</span>
+      {progress && <Progress {...progress} />}
     </header>
   );
 }
@@ -107,10 +122,18 @@ export function Primary({
     </div>
   );
 }
-export function Help({ onClick, label = ja.help }: { onClick: () => void; label?: string }) {
+export function Help({
+  onClick,
+  label = ja.help,
+  icon = 'help',
+}: {
+  onClick: () => void;
+  label?: string;
+  icon?: 'help' | 'back';
+}) {
   return (
     <button className="help" onClick={onClick}>
-      <Icon name="help" />
+      <Icon name={icon} />
       {label}
     </button>
   );
